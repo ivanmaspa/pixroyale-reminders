@@ -474,5 +474,28 @@ public class MainActivity extends AppCompatActivity {
         public void stopAlarm() {
             activity.runOnUiThread(activity::stopAllAlarms);
         }
+
+        @JavascriptInterface
+        public void openTelegramBot(String usernameOrUrl) {
+            activity.runOnUiThread(() -> {
+                try {
+                    String url = usernameOrUrl;
+                    if (url.startsWith("@")) {
+                        url = "https://t.me/" + url.substring(1);
+                    } else if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("tg:")) {
+                        url = "https://t.me/" + url;
+                    }
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(intent);
+                } catch (Exception e) {
+                    try {
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/" + usernameOrUrl.replace("@", "")));
+                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(webIntent);
+                    } catch (Exception ignored) {}
+                }
+            });
+        }
     }
 }
