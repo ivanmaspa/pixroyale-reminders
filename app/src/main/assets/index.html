@@ -57,7 +57,7 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds04u</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds05u</span>
         </div>
         <p class="text-[11px] text-gray-400">Капча 19:00 • Аирдропы • Карта</p>
       </div>
@@ -426,7 +426,7 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds04u</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds05u</span>
   </footer>
 
   <script>
@@ -652,7 +652,7 @@
 
       // Sync with Android AlarmManager & background AlarmScheduler
       if (window.AndroidBridge && window.AndroidBridge.syncConfigAndReschedule) {
-        window.AndroidBridge.syncConfigAndReschedule(captchaLead, airdropLead, extraOn, normalOn, nightStart, nightEnd, nightOn, nightSilent);
+        window.AndroidBridge.syncConfigAndReschedule(captchaLead, airdropLead, extraOn, normalOn, nightStart, nightEnd, nightOn, nightSilent, sirenType);
       }
     }
 
