@@ -1,7 +1,11 @@
 package com.pixroyale.reminders;
 
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
@@ -25,6 +29,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +45,13 @@ public class MainActivity extends AppCompatActivity {
     private Thread sirenThread;
     private volatile boolean isSirenRunning = false;
 
+    // Weak / Normal mode vibration loop handler
+    private Handler normalVibHandler = new Handler(Looper.getMainLooper());
+    private boolean isNormalVibActive = false;
+
+    private static final String CHANNEL_ID_SILENT = "pixel_royale_silent_channel";
+    private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_channel";
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +62,14 @@ public class MainActivity extends AppCompatActivity {
         // Auto request camera runtime permission if needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 101);
+                requestPermissions(new String[]{
+                        android.Manifest.permission.CAMERA,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                }, 101);
             }
         }
 
-        // Init Camera for Flashlight strobe
+        initNotificationChannels();
         initCameraTorch();
 
         WebSettings settings = webView.getSettings();
@@ -68,6 +83,62 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new NativeBridge(this), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void initNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = getSystemService(NotificationManager.class);
+            if (nm != null) {
+                // Silent channel (no sound) for weak/normal mode vibration reminders
+                NotificationChannel chSilent = new NotificationChannel(
+                        CHANNEL_ID_SILENT,
+                        "Пиксель Рояль - Уведомления",
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                chSilent.setDescription("Вибро-оповещения без звука");
+                chSilent.setSound(null, null);
+                chSilent.enableVibration(false);
+                nm.createNotificationChannel(chSilent);
+
+                // Alarm channel
+                NotificationChannel chAlarm = new NotificationChannel(
+                        CHANNEL_ID_ALARM,
+                        "Пиксель Рояль - Экстра Тревога",
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                chAlarm.setDescription("Громкая сигнализация");
+                nm.createNotificationChannel(chAlarm);
+            }
+        }
+    }
+
+    private void showSystemNotification(String title, String text, boolean isAlarm) {
+        try {
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pi = PendingIntent.getActivity(
+                    this,
+                    0,
+                    intent,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0
+            );
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(
+                    this,
+                    isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT
+            )
+                    .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                    .setContentTitle(title)
+                    .setContentText(text)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setContentIntent(pi)
+                    .setAutoCancel(true);
+
+            nm.notify(1001, builder.build());
+        } catch (Exception ignored) {}
     }
 
     private void initCameraTorch() {
@@ -138,86 +209,83 @@ public class MainActivity extends AppCompatActivity {
 
             short[] buffer = new short[bufferSize];
             double phase = 0;
-            double t = 0;
+            double time = 0;
 
             while (isSirenRunning) {
-                for (int i = 0; i < buffer.length; i++) {
+                for (int i = 0; i < bufferSize; i++) {
                     double freq;
-                    if ("nuclear".equals(sirenType)) {
-                        // Nuclear war alarm: sweeps 400Hz to 1200Hz every 2 seconds
-                        double cycle = (t % 2.0) / 2.0;
-                        freq = 400 + 800 * (0.5 * (1 - Math.cos(2 * Math.PI * cycle)));
-                    } else if ("fast".equals(sirenType)) {
-                        // Fast European Police siren: sweeps 800Hz to 1600Hz twice per second
-                        double cycle = (t % 0.5) / 0.5;
-                        freq = 800 + 800 * cycle;
+                    if ("fast".equals(sirenType)) {
+                        // Fast 911 siren: alternating 900Hz and 1400Hz every 0.3s
+                        freq = ((int)(time / 0.3) % 2 == 0) ? 900.0 : 1400.0;
+                    } else if ("police".equals(sirenType)) {
+                        // Continuous wail 700Hz to 1600Hz
+                        freq = 700.0 + 900.0 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 1.5 * time));
                     } else {
-                        // Standard Police wail: sweeps 600Hz to 1400Hz every 1 second
-                        double cycle = (t % 1.0);
-                        freq = 600 + 800 * Math.abs(Math.sin(Math.PI * cycle));
+                        // Nuclear alarm (default): piercing 650Hz to 1800Hz sawtooth/triangle rise & fall
+                        double cycle = time % 1.2;
+                        if (cycle < 0.6) {
+                            freq = 650.0 + (1800.0 - 650.0) * (cycle / 0.6);
+                        } else {
+                            freq = 1800.0 - (1800.0 - 650.0) * ((cycle - 0.6) / 0.6);
+                        }
                     }
 
-                    phase += 2 * Math.PI * freq / sampleRate;
-                    if (phase > 2 * Math.PI) phase -= 2 * Math.PI;
+                    phase += 2.0 * Math.PI * freq / sampleRate;
+                    if (phase > 2.0 * Math.PI) phase -= 2.0 * Math.PI;
 
-                    // Square / clipped sine wave for extreme loudness & cutting harmonics
-                    double rawSample = Math.sin(phase) + 0.3 * Math.sin(3 * phase);
-                    if (rawSample > 0.8) rawSample = 0.8;
-                    if (rawSample < -0.8) rawSample = -0.8;
-
-                    buffer[i] = (short) (rawSample * 32767);
-                    t += 1.0 / sampleRate;
+                    // High intensity square-sine wave
+                    double sample = Math.sin(phase) > 0 ? 0.95 : -0.95;
+                    buffer[i] = (short) (sample * 32767);
+                    time += 1.0 / sampleRate;
                 }
-                track.write(buffer, 0, buffer.length);
+                track.write(buffer, 0, bufferSize);
             }
 
-            track.stop();
-            track.release();
+            try {
+                track.stop();
+                track.release();
+            } catch (Exception ignored) {}
         });
-        sirenThread.setPriority(Thread.MAX_PRIORITY);
+
         sirenThread.start();
     }
 
     private void stopLoudSirenAudio() {
         isSirenRunning = false;
         if (sirenThread != null) {
-            try { sirenThread.interrupt(); } catch (Exception ignored) {}
+            try {
+                sirenThread.join(250);
+            } catch (Exception ignored) {}
             sirenThread = null;
         }
     }
 
-    // Robust Native Vibration using both Vibrator and VibratorManager (Android 12-16)
-    private void triggerRobustVibration(int durationSec, boolean isExtra) {
+    private Vibrator getVibrator() {
+        Vibrator vibrator = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            if (vm != null) vibrator = vm.getDefaultVibrator();
+        }
+        if (vibrator == null) {
+            vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        return vibrator;
+    }
+
+    // Extra Mode continuous vibration
+    private void triggerExtraVibration() {
         try {
-            Vibrator vibrator = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
-                if (vm != null) vibrator = vm.getDefaultVibrator();
-            }
-            if (vibrator == null) {
-                vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            }
-
+            Vibrator vibrator = getVibrator();
             if (vibrator != null && vibrator.hasVibrator()) {
-                long[] timings;
-                int[] amplitudes;
-
-                if (isExtra) {
-                    // Maximum aggressive pulse vibration
-                    timings = new long[]{0, 400, 100, 400, 100, 400, 100};
-                    amplitudes = new int[]{0, 255, 0, 255, 0, 255, 0};
-                } else {
-                    // Gentle normal vibration
-                    timings = new long[]{0, 300, 200, 300};
-                    amplitudes = new int[]{0, 180, 0, 180};
-                }
+                long[] timings = new long[]{0, 400, 100, 400, 100, 400, 100};
+                int[] amplitudes = new int[]{0, 255, 0, 255, 0, 255, 0};
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     VibrationEffect effect;
                     if (vibrator.hasAmplitudeControl()) {
-                        effect = VibrationEffect.createWaveform(timings, amplitudes, isExtra ? 0 : -1);
+                        effect = VibrationEffect.createWaveform(timings, amplitudes, 0);
                     } else {
-                        effect = VibrationEffect.createWaveform(timings, isExtra ? 0 : -1);
+                        effect = VibrationEffect.createWaveform(timings, 0);
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -229,22 +297,71 @@ public class MainActivity extends AppCompatActivity {
                         vibrator.vibrate(effect);
                     }
                 } else {
-                    vibrator.vibrate(timings, isExtra ? 0 : -1);
+                    vibrator.vibrate(timings, 0);
                 }
             }
         } catch (Exception ignored) {}
     }
 
+    // Weak / Normal Mode repetitive vibration:
+    // "вибрация протяженностью 3 секунды с интервалом 5 секунд прямо до :00 без звука с уведомлением"
+    private void startNormalVibrationLoop(int totalSeconds) {
+        stopNormalVibrationLoop();
+        isNormalVibActive = true;
+
+        final long endTimeMs = System.currentTimeMillis() + (totalSeconds * 1000L);
+
+        Runnable vibPulseRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!isNormalVibActive || System.currentTimeMillis() >= endTimeMs) {
+                    stopNormalVibrationLoop();
+                    return;
+                }
+
+                // Vibrate for 3000ms (3 seconds)
+                try {
+                    Vibrator v = getVibrator();
+                    if (v != null && v.hasVibrator()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                VibrationAttributes va = new VibrationAttributes.Builder()
+                                        .setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                                        .build();
+                                v.vibrate(effect, va);
+                            } else {
+                                v.vibrate(effect);
+                            }
+                        } else {
+                            v.vibrate(3000);
+                        }
+                    }
+                } catch (Exception ignored) {}
+
+                // Next pulse in 5 seconds (5000ms)
+                if (isNormalVibActive && System.currentTimeMillis() + 5000L < endTimeMs) {
+                    normalVibHandler.postDelayed(this, 5000);
+                } else {
+                    // Final delay to clean up at end
+                    long remain = Math.max(0, endTimeMs - System.currentTimeMillis());
+                    normalVibHandler.postDelayed(() -> stopNormalVibrationLoop(), remain);
+                }
+            }
+        };
+
+        normalVibHandler.post(vibPulseRunnable);
+    }
+
+    private void stopNormalVibrationLoop() {
+        isNormalVibActive = false;
+        normalVibHandler.removeCallbacksAndMessages(null);
+        stopVibration();
+    }
+
     private void stopVibration() {
         try {
-            Vibrator vibrator = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
-                if (vm != null) vibrator = vm.getDefaultVibrator();
-            }
-            if (vibrator == null) {
-                vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            }
+            Vibrator vibrator = getVibrator();
             if (vibrator != null) {
                 vibrator.cancel();
             }
@@ -291,35 +408,29 @@ public class MainActivity extends AppCompatActivity {
     public void startNativeExtraAlarm(int durationSec, String sirenType) {
         stopAllAlarms();
         setMaxVolumes();
+        showSystemNotification("🚨 Пиксель Рояль: ЭКСТРА ТРЕВОГА!", "До ивента осталась 1 минута! Скорее заходи в игру!", true);
         startLoudSirenAudio(sirenType);
-        triggerRobustVibration(durationSec, true);
+        triggerExtraVibration();
         startFlashStrobe(durationSec);
 
         strobeHandler.postDelayed(this::stopAllAlarms, durationSec * 1000L);
     }
 
-    // 2. NORMAL MODE: Standard notification chime, mild vibration, NO flashlight
-    public void startNativeNormalReminder() {
+    // 2. WEAK / NORMAL MODE: Silent with system notification, periodic 3s vibration every 5s until :00
+    public void startNativeNormalReminder(int durationUntilZeroSec, String eventTitle) {
         stopAllAlarms();
-        try {
-            Uri notifUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notifUri);
-            if (r != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    r.setAudioAttributes(new AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                            .build());
-                }
-                r.play();
-            }
-        } catch (Exception ignored) {}
 
-        triggerRobustVibration(2, false);
+        // Show push notification
+        String title = (eventTitle != null && !eventTitle.isEmpty()) ? eventTitle : "Пиксель Рояль: Скоро ивент!";
+        showSystemNotification(title, "Осталось времени до :00. Телефон вибрирует каждые 5 сек по 3 сек.", false);
+
+        // Run vibration pulses (3s pulse, 5s period) strictly until event begins (:00)
+        startNormalVibrationLoop(durationUntilZeroSec > 0 ? durationUntilZeroSec : 15);
     }
 
     public void stopAllAlarms() {
         stopLoudSirenAudio();
+        stopNormalVibrationLoop();
         stopVibration();
         stopFlashStrobe();
         if (currentRingtone != null && currentRingtone.isPlaying()) {
@@ -355,8 +466,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void triggerNormalReminder() {
-            activity.runOnUiThread(activity::startNativeNormalReminder);
+        public void triggerNormalReminder(int secondsUntilZero, String eventTitle) {
+            activity.runOnUiThread(() -> activity.startNativeNormalReminder(secondsUntilZero, eventTitle));
         }
 
         @JavascriptInterface
