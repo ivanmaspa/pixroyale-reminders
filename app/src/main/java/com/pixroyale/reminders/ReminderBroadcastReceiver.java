@@ -163,7 +163,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    private void prepareWeakAudioState(Context context) {
+    public static void prepareWeakAudioState(Context context) {
         try {
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             if (am == null) return;
