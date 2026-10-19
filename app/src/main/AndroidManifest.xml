@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -37,6 +38,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.pixroyale.reminders.FIRE_REMINDER" />
+                <action android:name="com.pixroyale.reminders.RESTORE_AUDIO" />
             </intent-filter>
         </receiver>
 
