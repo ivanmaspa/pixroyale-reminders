@@ -83,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new NativeBridge(this), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Schedule background alarms immediately on launch
+        AlarmScheduler.rescheduleAll(this);
     }
 
     private void initNotificationChannels() {
@@ -473,6 +476,50 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void stopAlarm() {
             activity.runOnUiThread(activity::stopAllAlarms);
+        }
+
+        @JavascriptInterface
+        public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent) {
+            activity.runOnUiThread(() -> {
+                try {
+                    android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+                    prefs.edit()
+                            .putInt("captchaLeadTime", captchaLead)
+                            .putInt("airdropLeadTime", airdropLead)
+                            .putBoolean("extraModeEnabled", extraOn)
+                            .putBoolean("normalModeEnabled", normalOn)
+                            .putInt("nightStartHour", nightStart)
+                            .putInt("nightEndHour", nightEnd)
+                            .putBoolean("nightModeEnabled", nightOn)
+                            .putBoolean("nightSilentMode", nightSilent)
+                            .apply();
+                    AlarmScheduler.rescheduleAll(activity);
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public void testSingleVibration() {
+            activity.runOnUiThread(() -> {
+                try {
+                    Vibrator v = activity.getVibrator();
+                    if (v != null && v.hasVibrator()) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                VibrationAttributes va = new VibrationAttributes.Builder()
+                                        .setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                                        .build();
+                                v.vibrate(effect, va);
+                            } else {
+                                v.vibrate(effect);
+                            }
+                        } else {
+                            v.vibrate(3000);
+                        }
+                    }
+                } catch (Exception ignored) {}
+            });
         }
 
         @JavascriptInterface
