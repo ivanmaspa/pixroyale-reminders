@@ -466,9 +466,15 @@ public class MainActivity extends AppCompatActivity {
     public void startNativeNormalReminder(int durationUntilZeroSec, String eventTitle) {
         stopAllAlarms();
 
+        try {
+            ReminderBroadcastReceiver.prepareWeakAudioState(this);
+            strobeHandler.postDelayed(() -> ReminderBroadcastReceiver.restoreAudioState(this), 
+                    (durationUntilZeroSec > 0 ? durationUntilZeroSec : 15) * 1000L);
+        } catch (Exception ignored) {}
+
         // Show push notification
         String title = (eventTitle != null && !eventTitle.isEmpty()) ? eventTitle : "Пиксель Рояль: Скоро ивент!";
-        showSystemNotification(title, "Осталось времени до :00. Телефон вибрирует каждые 5 сек по 3 сек.", false);
+        showSystemNotification(title, "Осталось времени до :00. Слабый режим активен.", false);
 
         // Run vibration pulses (3s pulse, 5s period) strictly until event begins (:00)
         startNormalVibrationLoop(durationUntilZeroSec > 0 ? durationUntilZeroSec : 15);
@@ -875,22 +881,45 @@ public class MainActivity extends AppCompatActivity {
         public void openTelegramBot(String usernameOrUrl) {
             activity.runOnUiThread(() -> {
                 try {
-                    String url = usernameOrUrl;
-                    if (url.startsWith("@")) {
-                        url = "https://t.me/" + url.substring(1);
-                    } else if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("tg:")) {
-                        url = "https://t.me/" + url;
+                    String clean = usernameOrUrl.replace("@", "")
+                            .replace("https://t.me/", "")
+                            .replace("http://t.me/", "")
+                            .replace("/", "")
+                            .trim();
+
+                    // 1. Direct tg:// protocol intent
+                    Intent tgIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + clean));
+                    tgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                    // 2. Try known Telegram client packages directly so browser NEVER opens
+                    String[] tgPackages = new String[] {
+                            "org.telegram.messenger",
+                            "org.telegram.plus",
+                            "org.thunderdog.challegram",
+                            "org.telegram.messenger.web"
+                    };
+
+                    for (String pkg : tgPackages) {
+                        try {
+                            Intent pkgIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + clean));
+                            pkgIntent.setPackage(pkg);
+                            pkgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            activity.startActivity(pkgIntent);
+                            return;
+                        } catch (Exception ignored) {}
                     }
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    activity.startActivity(intent);
-                } catch (Exception e) {
+
+                    // 3. Try generic tg:// intent if package name differs
                     try {
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/" + usernameOrUrl.replace("@", "")));
-                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        activity.startActivity(webIntent);
+                        activity.startActivity(tgIntent);
+                        return;
                     } catch (Exception ignored) {}
-                }
+
+                    // 4. Fallback to browser only if user does not have Telegram installed
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/" + clean));
+                    webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(webIntent);
+                } catch (Exception ignored) {}
             });
         }
     }
