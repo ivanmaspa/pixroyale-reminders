@@ -21,6 +21,7 @@ public class AlarmScheduler {
         SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
         boolean extraEnabled = prefs.getBoolean("extraModeEnabled", true);
         boolean normalEnabled = prefs.getBoolean("normalModeEnabled", true);
+        boolean customEnabled = prefs.getBoolean("customModeEnabled", false);
         int captchaLeadMin = prefs.getInt("captchaLeadTime", 3);
         int airdropLeadMin = prefs.getInt("airdropLeadTime", 5);
 
@@ -61,7 +62,19 @@ public class AlarmScheduler {
             cancelAlarm(context, am, 102);
         }
 
-        // 1.3 Captcha Audio Restore Alarm at exactly 19:00:00
+        // 1.3 Captcha Custom Mode Alarm (triggers at lead time if custom enabled)
+        if (customEnabled) {
+            Calendar cCustom = (Calendar) captchaCal.clone();
+            cCustom.add(Calendar.MINUTE, -captchaLeadMin);
+            if (cCustom.after(nowMsk)) {
+                scheduleExactAlarm(context, am, 104, cCustom.getTimeInMillis(), "custom",
+                        "Пиксель Рояль: Капча (Свой режим)", "Капча через " + captchaLeadMin + " мин!");
+            }
+        } else {
+            cancelAlarm(context, am, 104);
+        }
+
+        // 1.4 Captcha Audio Restore Alarm at exactly 19:00:00
         if (captchaCal.after(nowMsk)) {
             scheduleRestoreAudioAlarm(context, am, 103, captchaCal.getTimeInMillis());
         }
@@ -115,7 +128,19 @@ public class AlarmScheduler {
             cancelAlarm(context, am, 202);
         }
 
-        // 2.3 Airdrop Audio Restore Alarm at exactly :00:00
+        // 2.3 Airdrop Custom Mode Alarm (at lead time)
+        if (customEnabled) {
+            Calendar aCustom = (Calendar) airdropCal.clone();
+            aCustom.add(Calendar.MINUTE, -airdropLeadMin);
+            if (aCustom.after(nowMsk)) {
+                scheduleExactAlarm(context, am, 204, aCustom.getTimeInMillis(), "custom",
+                        "Пиксель Рояль: Аирдропы (Свой режим)", "Сундуки в " + nextAirdropHour + ":00 МСК (через " + airdropLeadMin + " мин)");
+            }
+        } else {
+            cancelAlarm(context, am, 204);
+        }
+
+        // 2.4 Airdrop Audio Restore Alarm at exactly :00:00
         if (airdropCal.after(nowMsk)) {
             scheduleRestoreAudioAlarm(context, am, 203, airdropCal.getTimeInMillis());
         }
