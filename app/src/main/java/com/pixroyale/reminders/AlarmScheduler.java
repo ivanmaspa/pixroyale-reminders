@@ -57,6 +57,11 @@ public class AlarmScheduler {
             }
         }
 
+        // 1.3 Captcha Audio Restore Alarm at exactly 19:00:00
+        if (captchaCal.after(nowMsk)) {
+            scheduleRestoreAudioAlarm(context, am, 103, captchaCal.getTimeInMillis());
+        }
+
         // 2. Schedule Next Airdrop
         int nextAirdropHour = -1;
         Calendar airdropCal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Moscow"));
@@ -100,6 +105,30 @@ public class AlarmScheduler {
                 scheduleExactAlarm(context, am, 202, aExtra.getTimeInMillis(), "extra",
                         "🚨 Пиксель Рояль: АИРДРОП ЧЕРЕЗ 1 МИН!", "Сундуки на карте в " + nextAirdropHour + ":00 МСК!");
             }
+        }
+
+        // 2.3 Airdrop Audio Restore Alarm at exactly :00:00
+        if (airdropCal.after(nowMsk)) {
+            scheduleRestoreAudioAlarm(context, am, 203, airdropCal.getTimeInMillis());
+        }
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private static void scheduleRestoreAudioAlarm(Context context, AlarmManager am, int requestCode, long triggerAtMillis) {
+        Intent intent = new Intent(context, ReminderBroadcastReceiver.class);
+        intent.setAction(ReminderBroadcastReceiver.ACTION_RESTORE_AUDIO);
+
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+        } else {
+            am.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
         }
     }
 
