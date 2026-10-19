@@ -17,13 +17,6 @@
     }
     .custom-scroll::-webkit-scrollbar { width: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
-    @keyframes pulseAlarm {
-      0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-      50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.9); }
-    }
-    .alarm-active {
-      animation: pulseAlarm 1s infinite;
-    }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between overflow-hidden">
@@ -43,7 +36,7 @@
           Пиксель Рояль
           <span class="px-1.5 py-0.2 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-bold">PRO</span>
         </h1>
-        <p class="text-[11px] text-gray-400">Трекер Капчи и Аирдропов</p>
+        <p class="text-[11px] text-gray-400">Трекер Капчи & Дропов (3 мин)</p>
       </div>
     </div>
     <div class="text-right">
@@ -62,56 +55,54 @@
       <i data-lucide="plane" class="w-4 h-4"></i> Аирдропы
     </button>
     <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2.5 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
-      <i data-lucide="volume-2" class="w-4 h-4"></i> Экстра Режим
+      <i data-lucide="sliders" class="w-4 h-4"></i> Настройки
     </button>
   </nav>
 
   <!-- Main Scrollable Content -->
   <main class="relative z-10 flex-1 overflow-y-auto p-4 custom-scroll space-y-4">
 
-    <!-- TAB 1: КАПЧА В 19:00 МСК (ГЛАВНЫЙ ФОКУС) -->
+    <!-- TAB 1: КАПЧА В 19:00 МСК -->
     <div id="content-captcha" class="space-y-4">
       
       <!-- Big Hero Timer Card -->
       <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/80 via-gray-900 to-gray-900 border border-red-800/50 shadow-2xl relative overflow-hidden">
-        <div class="absolute -right-8 -top-8 w-32 h-32 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
-
         <div class="flex items-center justify-between mb-3">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
-            ЕЖЕДНЕВНО В 19:00 МСК
+            КАПЧА: 19:00 – 19:03 МСК
           </span>
           <span id="captchaRemainingBadge" class="text-xs font-mono font-bold text-gray-300 bg-gray-800/90 px-2.5 py-1 rounded-xl border border-gray-700">
             через --:--:--
           </span>
         </div>
 
-        <h2 class="text-3xl font-black text-white tracking-tight mt-1">Вечерняя капча</h2>
-        <p class="text-xs text-gray-300 mt-2 leading-relaxed">
-          Идет всего несколько минут! Если пропустить ввод — заблокируются награды за вайп.
+        <h2 class="text-2xl font-black text-white tracking-tight mt-1">Вечерняя капча</h2>
+        <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+          Длительность: <b>ровно 3 минуты</b> (до 19:03). Пропуск блокирует награды за вайп!
         </p>
 
-        <!-- Status Card inside -->
+        <!-- Status & Duration Indicator -->
         <div class="mt-4 p-3.5 rounded-2xl bg-gray-950/60 border border-gray-800 flex items-center justify-between">
           <div>
-            <div class="text-[11px] text-gray-400">Точное время старта:</div>
+            <div class="text-[11px] text-gray-400">Старт ивента:</div>
             <div class="text-sm font-extrabold text-white">19:00:00 МСК</div>
           </div>
           <div class="text-right">
-            <div class="text-[11px] text-gray-400">Сирена включена:</div>
-            <div class="text-sm font-extrabold text-red-400" id="captchaAlarmStatus">за 1 минуту</div>
+            <div class="text-[11px] text-gray-400">Окно активности:</div>
+            <div class="text-sm font-extrabold text-amber-400">19:00 — 19:03 МСК</div>
           </div>
         </div>
       </div>
 
-      <!-- Quick Toggles Card -->
+      <!-- Quick Controls Card -->
       <div class="p-4 rounded-3xl bg-gray-900/70 border border-gray-800 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Настройки для Капчи</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Напоминание о Капче</h3>
 
         <div class="flex items-center justify-between py-1">
           <div>
-            <div class="text-xs font-semibold text-white">Уведомление за сколько до 19:00</div>
-            <div class="text-[11px] text-gray-400">Заблаговременный сигнал</div>
+            <div class="text-xs font-semibold text-white">За сколько минут напоминать</div>
+            <div class="text-[11px] text-gray-400">Время первого сигнала</div>
           </div>
           <select id="captchaLeadTime" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-red-500 font-medium">
             <option value="1">За 1 мин</option>
@@ -125,7 +116,7 @@
         <div class="flex items-center justify-between py-1 border-t border-gray-800">
           <div>
             <div class="text-xs font-semibold text-white">Количество повторов сигнала</div>
-            <div class="text-[11px] text-gray-400">Повторять каждую минуту до старта</div>
+            <div class="text-[11px] text-gray-400">Повторные напоминания до старта</div>
           </div>
           <select id="captchaRepeats" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-red-500 font-medium">
             <option value="1">1 раз</option>
@@ -144,7 +135,7 @@
       <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/80 via-gray-900 to-gray-900 border border-indigo-800/50 shadow-2xl">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
-            <i data-lucide="radar" class="w-4 h-4"></i> Следующий сброс
+            <i data-lucide="radar" class="w-4 h-4"></i> Следующий сброс (3 мин)
           </span>
           <span id="nextAirdropBadge" class="text-xs font-mono font-bold text-sky-300 bg-sky-950/80 px-2.5 py-1 rounded-xl border border-sky-800">
             через --:--
@@ -152,13 +143,13 @@
         </div>
         <p id="nextAirdropTime" class="text-3xl font-black text-white tracking-tight">--:00 МСК</p>
         <p class="text-xs text-gray-300 mt-1">
-          Расписание: нечетные часы (кроме 19:00), плюс 20:00 МСК.
+          Сундуки на карте доступны <b>с :00 до :03 минут</b> каждого назначенного часа.
         </p>
       </div>
 
-      <!-- Airdrop Notification Settings -->
+      <!-- Airdrop Controls -->
       <div class="p-4 rounded-3xl bg-gray-900/70 border border-gray-800 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Параметры аирдропов</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Настройки Аирдропов</h3>
 
         <div class="flex items-center justify-between py-1">
           <div>
@@ -168,71 +159,127 @@
           <select id="airdropLeadTime" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500 font-medium">
             <option value="1">За 1 мин</option>
             <option value="2">За 2 мин</option>
+            <option value="3">За 3 мин</option>
             <option value="5" selected>За 5 мин</option>
-            <option value="10">За 10 мин</option>
           </select>
         </div>
 
         <div class="flex items-center justify-between py-1 border-t border-gray-800">
           <div>
-            <div class="text-xs font-semibold text-white">Пропускать ночь (01:00 - 05:00)</div>
-            <div class="text-[11px] text-gray-400">Не будить ночью</div>
+            <div class="text-xs font-semibold text-white">Количество повторов аирдропа</div>
+            <div class="text-[11px] text-gray-400">Повторять до наступления :00</div>
           </div>
-          <input type="checkbox" id="skipNightAirdrop" checked onchange="saveConfig()" class="w-4 h-4 rounded text-indigo-600 bg-gray-800 border-gray-700">
+          <select id="airdropRepeats" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-indigo-500 font-medium">
+            <option value="1" selected>1 раз</option>
+            <option value="2">2 раза</option>
+            <option value="3">3 раза</option>
+          </select>
         </div>
       </div>
 
       <!-- Schedule Waves -->
       <div class="space-y-2">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Часы сброса (МСК)</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Часы сброса сундуков (:00 — :03 МСК)</h3>
         <div id="airdropGrid" class="grid grid-cols-2 gap-2"></div>
       </div>
 
     </div>
 
-    <!-- TAB 3: ЭКСТРА РЕЖИМ (СИРЕНА И МАКСИМАЛЬНЫЙ ЗВУК) -->
+    <!-- TAB 3: НАСТРОЙКИ РЕЖИМОВ И НОЧИ -->
     <div id="content-settings" class="hidden space-y-4">
       
-      <!-- Extra Mode Hero Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-amber-950/80 via-red-950/70 to-gray-900 border border-red-700/60 shadow-2xl relative overflow-hidden">
-        <div class="flex items-center justify-between mb-3">
+      <!-- 1. Экстра-Режим Сирены & Фонарика -->
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/80 via-rose-950/60 to-gray-900 border border-red-700/60 shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-black">
-              !
-            </div>
+            <div class="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center font-black">!</div>
             <h3 class="text-base font-black text-white">Экстра-режим: Сигнализация</h3>
           </div>
           <input type="checkbox" id="extraModeEnabled" checked onchange="saveConfig()" class="w-5 h-5 accent-red-500 rounded">
         </div>
 
         <p class="text-xs text-gray-200 leading-relaxed">
-          За <b>1 минуту до ивента</b> телефон включает громкий звуковой сигнал сирены и непрерывную вибрацию, чтобы вы гарантированно не пропустили капчу или дроп, даже если телефон лежит на столе.
+          Срабатывает <b>ровно за 1 минуту</b> до ивента: громкая сирена на 100% громкости через динамик + мощная вибрация + мигающий фонарик каждую секунду.
         </p>
 
-        <div class="mt-4 pt-3 border-t border-red-800/40 grid grid-cols-2 gap-2 text-xs">
-          <div class="p-2.5 rounded-xl bg-black/40 border border-red-900/50">
-            <span class="text-gray-400 block text-[10px]">ВРЕМЯ СРАБАТЫВАНИЯ:</span>
-            <span class="font-bold text-red-400">За 60 секунд</span>
+        <!-- Siren Selection -->
+        <div class="p-3 rounded-2xl bg-black/40 border border-red-900/50 flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-white">Тип сирены:</div>
+            <div class="text-[11px] text-gray-400">Выбор тембра тревоги</div>
           </div>
-          <div class="p-2.5 rounded-xl bg-black/40 border border-red-900/50">
-            <span class="text-gray-400 block text-[10px]">ТИП СИГНАЛА:</span>
-            <span class="font-bold text-white">Сирена + Вибро</span>
-          </div>
+          <select id="sirenTypeSelect" onchange="saveConfig()" class="bg-gray-900 border border-red-700/60 rounded-xl px-2.5 py-1 text-xs text-red-300 font-bold outline-none">
+            <option value="nuclear" selected>Ядерная тревога (Громкая)</option>
+            <option value="fast">Быстрая сирена 911</option>
+            <option value="police">Полицейский вой</option>
+          </select>
+        </div>
+
+        <!-- Extra mode test buttons -->
+        <div class="flex gap-2 pt-1">
+          <button onclick="testExtraAlarm()" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="bell-ring" class="w-4 h-4"></i> Тест Экстра-режима
+          </button>
+          <button onclick="stopAnyAlarm()" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs border border-gray-700 active:scale-95 transition-all">
+            Стоп
+          </button>
         </div>
       </div>
 
-      <!-- Test Alarm Button -->
+      <!-- 2. Простой Режим (Обычное уведомление) -->
       <div class="p-4 rounded-3xl bg-gray-900/70 border border-gray-800 space-y-3">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">Проверка звука сирены</h4>
-        <p class="text-xs text-gray-400">Нажмите для проверки работы аудио-генератора сирены и вибро-отклика:</p>
-        
-        <div class="flex gap-2">
-          <button onclick="playAlarmSiren(3)" class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-2">
-            <i data-lucide="bell-ring" class="w-4 h-4"></i> Тест сирены (3 сек)
-          </button>
-          <button onclick="stopAlarmSiren()" class="px-4 py-3 rounded-2xl bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs border border-gray-700 active:scale-95 transition-all">
-            Стоп
-          </button>
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-white">Простой режим (Обычное уведомление)</h4>
+            <p class="text-xs text-gray-400">Мягкий сигнал колокольчика и короткое вибро за 3-5 мин</p>
+          </div>
+          <input type="checkbox" id="normalModeEnabled" checked onchange="saveConfig()" class="w-4 h-4 accent-sky-500 rounded">
+        </div>
+
+        <button onclick="testNormalReminder()" class="w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="bell" class="w-4 h-4"></i> Тест простого режима
+        </button>
+      </div>
+
+      <!-- 3. Настройки "Не будить ночью" -->
+      <div class="p-4 rounded-3xl bg-gray-900/70 border border-gray-800 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-white">Режим "Не будить ночью"</h4>
+            <p class="text-xs text-gray-400">Настройте интервал сна</p>
+          </div>
+          <input type="checkbox" id="nightModeEnabled" checked onchange="saveConfig()" class="w-4 h-4 accent-indigo-500 rounded">
+        </div>
+
+        <!-- Night hours select -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="p-2.5 rounded-xl bg-gray-950 border border-gray-800">
+            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ С:</label>
+            <select id="nightStartHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
+              <option value="22">22:00 МСК</option>
+              <option value="23">23:00 МСК</option>
+              <option value="0" selected>00:00 МСК</option>
+              <option value="1">01:00 МСК</option>
+            </select>
+          </div>
+          <div class="p-2.5 rounded-xl bg-gray-950 border border-gray-800">
+            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ ДО:</label>
+            <select id="nightEndHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
+              <option value="6">06:00 МСК</option>
+              <option value="7">07:00 МСК</option>
+              <option value="8" selected>08:00 МСК</option>
+              <option value="9">09:00 МСК</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Send silent notification toggle -->
+        <div class="flex items-center justify-between pt-2 border-t border-gray-800">
+          <div>
+            <div class="text-xs font-semibold text-white">Присылать без звука ночью</div>
+            <div class="text-[11px] text-gray-400">Без сирены и звуков, только текст</div>
+          </div>
+          <input type="checkbox" id="nightSilentMode" checked onchange="saveConfig()" class="w-4 h-4 accent-indigo-500 rounded">
         </div>
       </div>
 
@@ -240,86 +287,17 @@
 
   </main>
 
-  <!-- Bottom Notification Bar -->
+  <!-- Bottom Bar -->
   <footer class="relative z-10 px-4 py-3 bg-gray-900/90 border-t border-gray-800/80 backdrop-blur-xl flex items-center justify-between text-xs">
     <div class="flex items-center gap-2">
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="font-medium text-gray-300">Фоновый мониторинг включен</span>
+      <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-500 font-mono">19:00 Капча</span>
+    <span class="text-[11px] text-gray-500 font-mono">19:00 Капча (3м)</span>
   </footer>
 
   <script>
     lucide.createIcons();
-
-    // Sound Synthesizer for Siren (Web Audio API - loud, works offline)
-    let audioCtx = null;
-    let alarmOsc = null;
-    let alarmGain = null;
-    let isAlarmPlaying = false;
-
-    function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
-
-    function playAlarmSiren(durationSec = 5) {
-      // 1. Call native Android Bridge: sets alarm stream volume to max, plays system siren ringtone, blinks flashlight every second
-      if (window.AndroidBridge && window.AndroidBridge.triggerExtraAlarm) {
-        window.AndroidBridge.triggerExtraAlarm(durationSec);
-      }
-
-      // 2. Web Audio synthesizer fallback for web preview
-      try {
-        const ctx = getAudioContext();
-        stopAlarmSiren();
-
-        isAlarmPlaying = true;
-        alarmOsc = ctx.createOscillator();
-        alarmGain = ctx.createGain();
-
-        alarmOsc.type = 'sawtooth';
-        const now = ctx.currentTime;
-        alarmOsc.frequency.setValueAtTime(850, now);
-        for (let i = 0; i < durationSec * 2; i++) {
-          alarmOsc.frequency.linearRampToValueAtTime(1500, now + i * 0.5 + 0.25);
-          alarmOsc.frequency.linearRampToValueAtTime(850, now + (i + 1) * 0.5);
-        }
-
-        alarmGain.gain.setValueAtTime(1.0, now);
-        alarmGain.gain.exponentialRampToValueAtTime(0.01, now + durationSec);
-
-        alarmOsc.connect(alarmGain);
-        alarmGain.connect(ctx.destination);
-
-        alarmOsc.start(now);
-        alarmOsc.stop(now + durationSec);
-
-        if (navigator.vibrate) {
-          navigator.vibrate([500, 200, 500, 200, 1000]);
-        }
-
-        setTimeout(() => { stopAlarmSiren(); }, durationSec * 1000);
-      } catch (e) {
-        console.error("Audio error", e);
-      }
-    }
-
-    function stopAlarmSiren() {
-      if (window.AndroidBridge && window.AndroidBridge.stopAlarm) {
-        window.AndroidBridge.stopAlarm();
-      }
-      if (alarmOsc) {
-        try { alarmOsc.stop(); } catch(e) {}
-        alarmOsc = null;
-      }
-      isAlarmPlaying = false;
-    }
 
     const AIRDROP_HOURS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 21, 23];
 
@@ -344,10 +322,11 @@
       const now = new Date();
       const msk = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Moscow" }));
       const curH = msk.getHours();
+      const curM = msk.getMinutes();
 
       AIRDROP_HOURS.forEach(h => {
-        const isCurrent = (h === curH);
-        const isPast = (h < curH);
+        const isCurrent = (h === curH && curM < 3);
+        const isPast = (h < curH || (h === curH && curM >= 3));
         const card = document.createElement('div');
         card.className = `p-3 rounded-2xl border flex items-center justify-between text-xs transition-all ${
           isCurrent ? 'bg-sky-950/80 border-sky-500 shadow-md font-bold text-white' :
@@ -356,15 +335,44 @@
         }`;
         card.innerHTML = `
           <span>${String(h).padStart(2, '0')}:00 МСК</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-lg ${isCurrent ? 'bg-sky-500 text-white' : 'bg-gray-800 text-gray-400'}">
-            ${isCurrent ? 'ИДЕТ' : isPast ? 'Прошло' : 'Скоро'}
+          <span class="text-[10px] px-2 py-0.5 rounded-lg ${isCurrent ? 'bg-sky-500 text-white animate-pulse' : 'bg-gray-800 text-gray-400'}">
+            ${isCurrent ? 'ИДЕТ (до :03)' : isPast ? 'Прошло' : 'Скоро'}
           </span>
         `;
         grid.appendChild(card);
       });
     }
 
-    let lastAlertMinute = -1;
+    function isNightTime(mskHour) {
+      const nightEnabled = document.getElementById('nightModeEnabled').checked;
+      if (!nightEnabled) return false;
+      const start = parseInt(document.getElementById('nightStartHour').value, 10);
+      const end = parseInt(document.getElementById('nightEndHour').value, 10);
+      if (start > end) {
+        return mskHour >= start || mskHour < end;
+      } else {
+        return mskHour >= start && mskHour < end;
+      }
+    }
+
+    function testExtraAlarm() {
+      const type = document.getElementById('sirenTypeSelect').value;
+      if (window.AndroidBridge && window.AndroidBridge.triggerExtraAlarm) {
+        window.AndroidBridge.triggerExtraAlarm(5, type);
+      }
+    }
+
+    function testNormalReminder() {
+      if (window.AndroidBridge && window.AndroidBridge.triggerNormalReminder) {
+        window.AndroidBridge.triggerNormalReminder();
+      }
+    }
+
+    function stopAnyAlarm() {
+      if (window.AndroidBridge && window.AndroidBridge.stopAlarm) {
+        window.AndroidBridge.stopAlarm();
+      }
+    }
 
     function updateClocksAndTimers() {
       const now = new Date();
@@ -375,35 +383,51 @@
       const curM = msk.getMinutes();
       const curS = msk.getSeconds();
 
-      // 1. Calculate time until 19:00 Captcha
+      // 1. Captcha 19:00 (duration: 19:00 - 19:03)
       let captchaTarget = new Date(msk);
       captchaTarget.setHours(19, 0, 0, 0);
-      if (msk >= captchaTarget) {
-        // next day 19:00
-        captchaTarget.setDate(captchaTarget.getDate() + 1);
+
+      const isCaptchaActive = (curH === 19 && curM < 3);
+      if (isCaptchaActive) {
+        const leftS = (3 * 60) - (curM * 60 + curS);
+        document.getElementById('captchaRemainingBadge').textContent = `ИДЕТ СЕЙЧАС! Осталось ${leftS}с`;
+        document.getElementById('captchaRemainingBadge').className = "text-xs font-mono font-bold text-red-300 bg-red-950 px-2.5 py-1 rounded-xl border border-red-500 animate-pulse";
+      } else {
+        if (msk >= captchaTarget && (curH > 19 || (curH === 19 && curM >= 3))) {
+          captchaTarget.setDate(captchaTarget.getDate() + 1);
+        }
+        const captchaDiffMs = captchaTarget - msk;
+        const cHours = Math.floor(captchaDiffMs / 3600000);
+        const cMins = Math.floor((captchaDiffMs % 3600000) / 60000);
+        const cSecs = Math.floor((captchaDiffMs % 60000) / 1000);
+
+        document.getElementById('captchaRemainingBadge').textContent = 
+          `через ${cHours}ч ${String(cMins).padStart(2, '0')}м ${String(cSecs).padStart(2, '0')}с`;
+        document.getElementById('captchaRemainingBadge').className = "text-xs font-mono font-bold text-gray-300 bg-gray-800/90 px-2.5 py-1 rounded-xl border border-gray-700";
+
+        // Check Night Mode
+        const inNight = isNightTime(curH);
+        const nightSilent = document.getElementById('nightSilentMode').checked;
+
+        // Extra Alarm (at 18:59:00, 1 minute before)
+        const extraEnabled = document.getElementById('extraModeEnabled').checked;
+        if (extraEnabled && cHours === 0 && cMins === 1 && cSecs === 0) {
+          if (!inNight || !nightSilent) {
+            testExtraAlarm();
+          }
+        }
+
+        // Normal Reminder (e.g. 3 mins before)
+        const lead = parseInt(document.getElementById('captchaLeadTime').value || "3", 10);
+        if (cHours === 0 && cMins === lead && cSecs === 0) {
+          if (!inNight || !nightSilent) {
+            testNormalReminder();
+          }
+        }
       }
-      const captchaDiffMs = captchaTarget - msk;
-      const cHours = Math.floor(captchaDiffMs / 3600000);
-      const cMins = Math.floor((captchaDiffMs % 3600000) / 60000);
-      const cSecs = Math.floor((captchaDiffMs % 60000) / 1000);
 
-      document.getElementById('captchaRemainingBadge').textContent = 
-        `через ${cHours}ч ${String(cMins).padStart(2, '0')}м ${String(cSecs).padStart(2, '0')}с`;
-
-      // 2. Extra Mode Alarm for Captcha (1 minute before: 18:59:00)
-      const extraEnabled = document.getElementById('extraModeEnabled').checked;
-      if (extraEnabled && cHours === 0 && cMins === 1 && cSecs === 0) {
-        playAlarmSiren(15);
-      }
-
-      // 3. Lead Time Notification for Captcha
-      const leadTime = parseInt(document.getElementById('captchaLeadTime').value || "3", 10);
-      if (cHours === 0 && cMins === leadTime && cSecs === 0) {
-        playAlarmSiren(4);
-      }
-
-      // 4. Calculate next Airdrop
-      let nextAH = AIRDROP_HOURS.find(h => h > curH);
+      // 2. Next Airdrop calculation
+      let nextAH = AIRDROP_HOURS.find(h => (h > curH) || (h === curH && curM < 3));
       let airdropDiffMs = 0;
       if (nextAH !== undefined) {
         let aDate = new Date(msk);
@@ -417,17 +441,15 @@
         airdropDiffMs = aDate - msk;
       }
 
-      const aMins = Math.floor(airdropDiffMs / 60000);
-      const aSecs = Math.floor((airdropDiffMs % 60000) / 1000);
-      document.getElementById('nextAirdropTime').textContent = String(nextAH).padStart(2, '0') + ":00 МСК";
-      document.getElementById('nextAirdropBadge').textContent = `через ${aMins} мин ${aSecs} сек`;
-
-      // Extra mode for airdrop if 1 min before
-      if (extraEnabled && aMins === 1 && aSecs === 0) {
-        const skipNight = document.getElementById('skipNightAirdrop').checked;
-        if (!skipNight || (nextAH > 5 && nextAH < 24)) {
-          playAlarmSiren(8);
-        }
+      if (curM < 3 && AIRDROP_HOURS.includes(curH)) {
+        document.getElementById('nextAirdropBadge').textContent = `ВОЛНА ИДЕТ СЕЙЧАС (до :03)`;
+        document.getElementById('nextAirdropBadge').className = "text-xs font-mono font-bold text-sky-300 bg-sky-950 px-2.5 py-1 rounded-xl border border-sky-400 animate-pulse";
+      } else {
+        const aMins = Math.floor(airdropDiffMs / 60000);
+        const aSecs = Math.floor((airdropDiffMs % 60000) / 1000);
+        document.getElementById('nextAirdropTime').textContent = String(nextAH).padStart(2, '0') + ":00 МСК";
+        document.getElementById('nextAirdropBadge').textContent = `через ${aMins} мин ${aSecs} сек`;
+        document.getElementById('nextAirdropBadge').className = "text-xs font-mono font-bold text-sky-300 bg-sky-950/80 px-2.5 py-1 rounded-xl border border-sky-800";
       }
     }
 
@@ -435,26 +457,25 @@
       localStorage.setItem('captchaLeadTime', document.getElementById('captchaLeadTime').value);
       localStorage.setItem('captchaRepeats', document.getElementById('captchaRepeats').value);
       localStorage.setItem('airdropLeadTime', document.getElementById('airdropLeadTime').value);
+      localStorage.setItem('airdropRepeats', document.getElementById('airdropRepeats').value);
       localStorage.setItem('extraModeEnabled', document.getElementById('extraModeEnabled').checked);
-      localStorage.setItem('skipNightAirdrop', document.getElementById('skipNightAirdrop').checked);
+      localStorage.setItem('normalModeEnabled', document.getElementById('normalModeEnabled').checked);
+      localStorage.setItem('sirenTypeSelect', document.getElementById('sirenTypeSelect').value);
+      localStorage.setItem('nightModeEnabled', document.getElementById('nightModeEnabled').checked);
+      localStorage.setItem('nightStartHour', document.getElementById('nightStartHour').value);
+      localStorage.setItem('nightEndHour', document.getElementById('nightEndHour').value);
+      localStorage.setItem('nightSilentMode', document.getElementById('nightSilentMode').checked);
     }
 
     function loadConfig() {
-      if (localStorage.getItem('captchaLeadTime')) {
-        document.getElementById('captchaLeadTime').value = localStorage.getItem('captchaLeadTime');
-      }
-      if (localStorage.getItem('captchaRepeats')) {
-        document.getElementById('captchaRepeats').value = localStorage.getItem('captchaRepeats');
-      }
-      if (localStorage.getItem('airdropLeadTime')) {
-        document.getElementById('airdropLeadTime').value = localStorage.getItem('airdropLeadTime');
-      }
-      if (localStorage.getItem('extraModeEnabled') !== null) {
-        document.getElementById('extraModeEnabled').checked = (localStorage.getItem('extraModeEnabled') === 'true');
-      }
-      if (localStorage.getItem('skipNightAirdrop') !== null) {
-        document.getElementById('skipNightAirdrop').checked = (localStorage.getItem('skipNightAirdrop') === 'true');
-      }
+      const keys = ['captchaLeadTime', 'captchaRepeats', 'airdropLeadTime', 'airdropRepeats', 'sirenTypeSelect', 'nightStartHour', 'nightEndHour'];
+      keys.forEach(k => {
+        if (localStorage.getItem(k)) document.getElementById(k).value = localStorage.getItem(k);
+      });
+      const checks = ['extraModeEnabled', 'normalModeEnabled', 'nightModeEnabled', 'nightSilentMode'];
+      checks.forEach(c => {
+        if (localStorage.getItem(c) !== null) document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
+      });
     }
 
     loadConfig();
