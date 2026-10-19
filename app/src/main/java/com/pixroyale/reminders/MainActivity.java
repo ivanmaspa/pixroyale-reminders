@@ -583,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent) {
+        public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent, String sirenType) {
             activity.runOnUiThread(() -> {
                 try {
                     android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
@@ -596,6 +596,7 @@ public class MainActivity extends AppCompatActivity {
                             .putInt("nightEndHour", nightEnd)
                             .putBoolean("nightModeEnabled", nightOn)
                             .putBoolean("nightSilentMode", nightSilent)
+                            .putString("sirenTypeSelect", sirenType != null ? sirenType : "nuclear")
                             .apply();
                     AlarmScheduler.rescheduleAll(activity);
                 } catch (Exception ignored) {}
