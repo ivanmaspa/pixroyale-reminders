@@ -45,6 +45,8 @@ public class AlarmScheduler {
                 scheduleExactAlarm(context, am, 101, cNormal.getTimeInMillis(), "weak",
                         "Пиксель Рояль: Капча!", "Капча через " + captchaLeadMin + " мин! Окно сдачи: 19:00 - 19:03");
             }
+        } else {
+            cancelAlarm(context, am, 101);
         }
 
         // 1.2 Captcha Extra Alarm (1 min before = 18:59)
@@ -55,6 +57,8 @@ public class AlarmScheduler {
                 scheduleExactAlarm(context, am, 102, cExtra.getTimeInMillis(), "extra",
                         "🚨 Пиксель Рояль: КАПЧА ЧЕРЕЗ 1 МИНУТУ!", "Заходи в бота прямо сейчас!");
             }
+        } else {
+            cancelAlarm(context, am, 102);
         }
 
         // 1.3 Captcha Audio Restore Alarm at exactly 19:00:00
@@ -95,6 +99,8 @@ public class AlarmScheduler {
                 scheduleExactAlarm(context, am, 201, aNormal.getTimeInMillis(), "weak",
                         "Пиксель Рояль: Аирдропы!", "Сброс сундуков в " + nextAirdropHour + ":00 МСК (через " + airdropLeadMin + " мин)");
             }
+        } else {
+            cancelAlarm(context, am, 201);
         }
 
         // 2.2 Airdrop Extra Alarm (1 min before)
@@ -105,12 +111,30 @@ public class AlarmScheduler {
                 scheduleExactAlarm(context, am, 202, aExtra.getTimeInMillis(), "extra",
                         "🚨 Пиксель Рояль: АИРДРОП ЧЕРЕЗ 1 МИН!", "Сундуки на карте в " + nextAirdropHour + ":00 МСК!");
             }
+        } else {
+            cancelAlarm(context, am, 202);
         }
 
         // 2.3 Airdrop Audio Restore Alarm at exactly :00:00
         if (airdropCal.after(nowMsk)) {
             scheduleRestoreAudioAlarm(context, am, 203, airdropCal.getTimeInMillis());
         }
+    }
+
+    private static void cancelAlarm(Context context, AlarmManager am, int requestCode) {
+        try {
+            Intent intent = new Intent(context, ReminderBroadcastReceiver.class);
+            PendingIntent pi = PendingIntent.getBroadcast(
+                    context,
+                    requestCode,
+                    intent,
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_NO_CREATE
+            );
+            if (pi != null) {
+                am.cancel(pi);
+                pi.cancel();
+            }
+        } catch (Exception ignored) {}
     }
 
     @SuppressLint("ScheduleExactAlarm")
