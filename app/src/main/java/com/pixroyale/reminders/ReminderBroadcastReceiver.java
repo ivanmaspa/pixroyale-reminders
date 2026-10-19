@@ -87,6 +87,11 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         // Check mode flags directly from SharedPreferences to guarantee user settings are respected
         boolean extraEnabled = prefs.getBoolean("extraModeEnabled", true);
         boolean normalEnabled = prefs.getBoolean("normalModeEnabled", true);
+        boolean customEnabled = prefs.getBoolean("customModeEnabled", false);
+        boolean customFlash = prefs.getBoolean("customFlash", false);
+        boolean customVib = prefs.getBoolean("customVib", true);
+        boolean customSound = prefs.getBoolean("customSound", false);
+        boolean customNotif = prefs.getBoolean("customNotif", true);
 
         // If extra mode was triggered but user turned off extraModeEnabled, ignore it completely
         if ("extra".equals(mode) && !extraEnabled) {
@@ -106,12 +111,37 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        // Show push notification
-        showNotification(context, title, text, "extra".equals(mode));
+        // If custom mode was triggered but user turned off customModeEnabled, ignore it
+        if ("custom".equals(mode) && !customEnabled) {
+            AlarmScheduler.rescheduleAll(context);
+            if (wakeLock != null && wakeLock.isHeld()) {
+                try { wakeLock.release(); } catch (Exception ignored) {}
+            }
+            return;
+        }
 
-        // Vibration and Audio behavior:
+        // Show push notification
+        if ("custom".equals(mode)) {
+            if (customNotif) {
+                showNotification(context, title, text, customSound);
+            }
+        } else {
+            showNotification(context, title, text, "extra".equals(mode));
+        }
+
+        // Vibration, Flash, and Audio behavior:
         if (!isNight || !nightSilent) {
-            if ("extra".equals(mode)) {
+            if ("custom".equals(mode)) {
+                if (customSound) {
+                    playLoudAlarm(context);
+                }
+                if (customVib) {
+                    performVibration(context, 3000, customSound);
+                }
+                if (customFlash) {
+                    pulseFlashlight(context, 5000);
+                }
+            } else if ("extra".equals(mode)) {
                 // Extra mode: play loud alarm and 5-sec alarm vibration
                 playLoudAlarm(context);
                 performVibration(context, 5000, true);
@@ -349,6 +379,43 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                 }
                 track.stop();
                 track.release();
+            } catch (Exception ignored) {}
+        }).start();
+    }
+
+    private void pulseFlashlight(Context context, long durationMs) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        new Thread(() -> {
+            try {
+                android.hardware.camera2.CameraManager cm = (android.hardware.camera2.CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+                if (cm == null) return;
+                String camId = null;
+                for (String id : cm.getCameraIdList()) {
+                    android.hardware.camera2.CameraCharacteristics chars = cm.getCameraCharacteristics(id);
+                    Boolean hasFlash = chars.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                    Integer facing = chars.get(android.hardware.camera2.CameraCharacteristics.LENS_FACING);
+                    if (hasFlash != null && hasFlash && facing != null && facing == android.hardware.camera2.CameraCharacteristics.LENS_FACING_BACK) {
+                        camId = id;
+                        break;
+                    }
+                }
+                if (camId == null && cm.getCameraIdList().length > 0) {
+                    camId = cm.getCameraIdList()[0];
+                }
+                if (camId == null) return;
+
+                long end = System.currentTimeMillis() + durationMs;
+                boolean state = false;
+                while (System.currentTimeMillis() < end) {
+                    state = !state;
+                    try {
+                        cm.setTorchMode(camId, state);
+                    } catch (Exception ignored) {}
+                    Thread.sleep(500);
+                }
+                try {
+                    cm.setTorchMode(camId, false);
+                } catch (Exception ignored) {}
             } catch (Exception ignored) {}
         }).start();
     }
