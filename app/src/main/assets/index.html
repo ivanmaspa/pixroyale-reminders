@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Pixel Royale Elite Tracker B4xq02r</title>
+  <title>Pixel Royale Напоминания A2ds07u</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -54,25 +54,17 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(56, 189, 248, 0.35);
     }
-    .radial-pulse {
-      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-    }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.05); opacity: 0.4; }
-      100% { transform: scale(0.95); opacity: 0.8; }
-    }
   </style>
 </head>
 <body class="bg-gray-950 flex flex-col min-h-screen text-gray-100">
 
-  <!-- Ambient Dynamic Glow Backgrounds -->
+  <!-- Ambient Dynamic Glow Lights -->
   <div class="fixed top-0 left-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed top-1/3 right-0 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-10 left-10 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-1/2 right-0 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-  <!-- STICKY TOP HUD BAR -->
-  <header class="sticky top-0 z-40 px-3.5 py-2.5 bg-gray-950/90 backdrop-blur-xl border-b border-gray-800/80 flex items-center justify-between">
+  <!-- STICKY TOP APP HEADER -->
+  <header class="sticky top-0 z-40 px-4 py-2.5 bg-gray-950/90 backdrop-blur-xl border-b border-gray-800/80 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-red-500/25">
         <i data-lucide="swords" class="w-5 h-5 text-white"></i>
@@ -80,12 +72,9 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-black text-sm tracking-tight text-white uppercase">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-red-500/20 to-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-black">B4xq02r</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-red-500/20 to-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-black">A2ds07u</span>
         </div>
-        <p class="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-          <span>Капча 19:00 • Аирдропы • Карта • Лут-радар</span>
-        </p>
+        <p class="text-[10px] text-gray-400 font-medium">Капча 19:00 • Аирдропы • Карта</p>
       </div>
     </div>
     <div class="text-right">
@@ -95,62 +84,55 @@
     </div>
   </header>
 
-  <!-- QUICK ACTION / TELEGRAM INTEGRATION BAR -->
-  <section class="relative z-30 px-3 py-2 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md flex gap-2">
-    <!-- Map Button -->
-    <button onclick="openBot('@PBMap_bot')" class="flex-1 flex items-center justify-between px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-950/90 via-sky-900/80 to-blue-900/70 border border-cyan-500/50 text-left active:scale-[0.98] transition-all glow-cyan">
-      <div class="flex items-center gap-2 min-w-0">
-        <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+  <!-- QUICK MAP BOT INTEGRATION (Single Tap Direct Telegram Launch) -->
+  <section class="relative z-30 px-3.5 py-2 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md">
+    <button onclick="openBot('@PBMap_bot')" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-950/90 via-sky-900/80 to-blue-900/70 border border-cyan-500/50 text-left active:scale-[0.98] transition-all glow-cyan">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
           <i data-lucide="map" class="w-4 h-4"></i>
         </div>
         <div class="truncate">
-          <div class="text-[11px] font-black text-cyan-100 truncate">КАРТА СУНДУКОВ</div>
-          <div class="text-[9px] text-cyan-300/80 font-mono">@PBMap_bot</div>
+          <div class="text-xs font-black text-cyan-100 truncate">КАРТА ИГРЫ (ОТКРЫТЬ В ТЕЛЕГРАМ)</div>
+          <div class="text-[10px] text-cyan-300/80 font-mono">@PBMap_bot</div>
         </div>
       </div>
-      <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-300 shrink-0 ml-1"></i>
-    </button>
-
-    <!-- Quick Stop Alarm Button -->
-    <button onclick="stopAnyAlarm()" class="px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
-      <i data-lucide="square" class="w-3.5 h-3.5 text-red-400"></i>
-      <span>Стоп</span>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold text-[11px] shrink-0">
+        <span>Открыть</span>
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+      </div>
     </button>
   </section>
 
-  <!-- NAVIGATION TABS -->
-  <nav class="sticky top-[53px] z-30 flex bg-gray-950/95 border-b border-gray-800/80 px-2 pt-1.5 gap-1 backdrop-blur-md overflow-x-auto custom-scroll">
-    <button onclick="switchTab('captcha')" id="tab-captcha" class="flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1">
-      <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> <span>Капча</span>
+  <!-- NAVIGATION TABS (Strictly the 4 original A2ds06u tabs) -->
+  <nav class="sticky top-[53px] z-30 flex bg-gray-950/95 border-b border-gray-800/80 px-2 pt-1.5 gap-1 backdrop-blur-md">
+    <button onclick="switchTab('captcha')" id="tab-captcha" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1.5">
+      <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> <span>Капча 19:00</span>
     </button>
-    <button onclick="switchTab('airdrop')" id="tab-airdrop" class="flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1">
+    <button onclick="switchTab('airdrop')" id="tab-airdrop" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
       <i data-lucide="box" class="w-3.5 h-3.5"></i> <span>Аирдропы</span>
     </button>
-    <button onclick="switchTab('tactics')" id="tab-tactics" class="flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1">
-      <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> <span>Тактика</span>
-    </button>
-    <button onclick="switchTab('map')" id="tab-map" class="flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1">
+    <button onclick="switchTab('map')" id="tab-map" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
       <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span>Карта</span>
     </button>
-    <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1">
-      <i data-lucide="sliders" class="w-3.5 h-3.5"></i> <span>Режимы</span>
+    <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
+      <i data-lucide="settings" class="w-3.5 h-3.5"></i> <span>Режимы</span>
     </button>
   </nav>
 
-  <!-- MAIN SCROLLABLE CONTENT -->
-  <main class="flex-1 p-3.5 space-y-4 pb-24">
+  <!-- FULLY SCROLLABLE MAIN CONTENT AREA -->
+  <main class="flex-1 p-3.5 space-y-4 pb-20">
 
     <!-- ========================================== -->
-    <!-- TAB 1: КАПЧА В 19:00:00 МСК                 -->
+    <!-- TAB 1: КАПЧА В 19:00:00 МСК (3 МИНУТЫ)      -->
     <!-- ========================================== -->
     <div id="content-captcha" class="space-y-3.5">
       
       <!-- Hero Captcha Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/95 via-gray-900 to-gray-950 border border-red-700/60 shadow-2xl relative overflow-hidden">
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/90 via-gray-900 to-gray-950 border border-red-700/60 shadow-2xl relative overflow-hidden">
         <div class="flex items-center justify-between mb-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-red-500/20 text-red-300 border border-red-500/35">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/35">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
-            КАПЧА 19:00 МСК
+            КАПЧА 19:00 (3 мин)
           </span>
           <span id="captchaRemainingBadge" class="text-xs font-mono font-bold text-gray-200 bg-black/60 px-2.5 py-1 rounded-xl border border-gray-700">
             через --:--:--
@@ -159,7 +141,7 @@
 
         <h2 class="text-2xl font-black text-white tracking-tight">Вечерняя капча</h2>
         <p class="text-xs text-gray-300 mt-1 leading-relaxed">
-          Окно сдачи: строго <b>с 19:00 до 19:03 МСК</b>. Своевременный вход гарантирует получение награды без риска бана или потери очков.
+          Окно сдачи: <b>с 19:00 до 19:03 МСК</b>. Снижает пропуски до абсолютного минимума.
         </p>
 
         <!-- Exact Time bounds box from A2ds06u -->
@@ -174,7 +156,7 @@
           </div>
         </div>
 
-        <!-- Live Visual Progress Bar for Captcha Window -->
+        <!-- Live Visual Progress Bar -->
         <div class="mt-3 p-3 rounded-2xl bg-black/60 border border-gray-800 space-y-2">
           <div class="flex justify-between text-[11px] font-bold">
             <span class="text-gray-400">Статус окна:</span>
@@ -193,8 +175,8 @@
           <button onclick="testExtraAlarm()" class="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
             <i data-lucide="bell-ring" class="w-4 h-4"></i> Тест тревоги
           </button>
-          <button onclick="testNormalReminder(15)" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/40 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест слабого вибро
+          <button onclick="testSingleVib()" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/40 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибро (3с)
           </button>
         </div>
 
@@ -217,7 +199,7 @@
         </ul>
       </div>
 
-      <!-- Settings Card for Captcha Timing -->
+      <!-- Captcha Timing Settings Card -->
       <div class="p-4 rounded-3xl glass-card space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-red-400"></i> Интервал срабатывания
@@ -226,7 +208,7 @@
         <div class="flex items-center justify-between py-1">
           <div>
             <div class="text-xs font-semibold text-white">Оповещать за:</div>
-            <div class="text-[11px] text-gray-400">Время запуска предварительного вибро</div>
+            <div class="text-[11px] text-gray-400">Время запуска слабого вибро-режима</div>
           </div>
           <select id="captchaLeadTime" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-red-500 font-medium">
             <option value="1">За 1 мин</option>
@@ -240,7 +222,7 @@
         <div class="flex items-center justify-between py-1 border-t border-gray-800">
           <div>
             <div class="text-xs font-semibold text-white">Количество напоминаний</div>
-            <div class="text-[11px] text-gray-400">Повторения перед началом</div>
+            <div class="text-[11px] text-gray-400">Повторения до старта</div>
           </div>
           <select id="captchaRepeats" onchange="saveConfig()" class="bg-gray-800 border border-gray-700 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none focus:border-red-500 font-medium">
             <option value="1">1 раз</option>
@@ -254,14 +236,14 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 2: АИРДРОПЫ (СУНДУКИ)                    -->
+    <!-- TAB 2: АИРДРОПЫ (КАЖДЫЕ 2 ЧАСА + 20:00)    -->
     <!-- ========================================== -->
     <div id="content-airdrop" class="hidden space-y-3.5">
       
       <!-- Airdrop Hero Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/95 via-gray-900 to-gray-950 border border-indigo-700/60 shadow-2xl">
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/90 via-gray-900 to-gray-950 border border-indigo-700/50 shadow-2xl">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-extrabold text-sky-400 flex items-center gap-1.5">
+          <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
             <i data-lucide="radar" class="w-4 h-4"></i> Ближайшая волна ящиков
           </span>
           <span id="nextAirdropBadge" class="text-xs font-mono font-bold text-sky-300 bg-sky-950/80 px-2.5 py-1 rounded-xl border border-sky-800">
@@ -319,128 +301,27 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 3: ТАКТИКА И ГАЙД ПО ЛУТУ               -->
-    <!-- ========================================== -->
-    <div id="content-tactics" class="hidden space-y-3.5">
-      
-      <!-- Loot Strategy Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-amber-950/90 via-gray-900 to-gray-950 border border-amber-600/50 shadow-2xl space-y-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-black">
-            <i data-lucide="crown" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-black text-white">Как лутать сундуки без шанса врагам</h3>
-            <p class="text-[11px] text-amber-300/80">Стратегия топ-игроков Pixel Royale</p>
-          </div>
-        </div>
-
-        <div class="space-y-2 text-xs text-gray-200">
-          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800 flex items-start gap-2">
-            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">1</span>
-            <div><b>Тайминг сброса:</b> Сундуки падают ровно в секунду :00. Оповещение за 5 минут позволяет добежать до центрального сектора до толпы.</div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800 flex items-start gap-2">
-            <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold text-[10px]">2</span>
-            <div><b>Используй карту:</b> По кнопке <b>@PBMap_bot</b> перед волной открывай карту зон, чтобы видеть свободные сундуки без засад.</div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800 flex items-start gap-2">
-            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">3</span>
-            <div><b>3 минуты активности:</b> Если сундук не открыт до :03 — он исчезает. Не отвлекайся на мелкие драки до открытия ящика!</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Interactive Checklist -->
-      <div class="p-4 rounded-3xl glass-card space-y-3">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
-          <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i> Чек-лист готовности к рейду
-        </h4>
-        <div class="space-y-2 text-xs">
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-black/40 border border-gray-800 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 accent-emerald-500 rounded">
-            <span>Проверить заряд телефона и стабильный интернет</span>
-          </label>
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-black/40 border border-gray-800 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 accent-emerald-500 rounded">
-            <span>Включить звук или вибрацию в приложении</span>
-          </label>
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-black/40 border border-gray-800 cursor-pointer">
-            <input type="checkbox" class="w-4 h-4 accent-emerald-500 rounded">
-            <span>Открыть @PBMap_bot за 2 минуты до волны</span>
-          </label>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ========================================== -->
-    <!-- TAB 4: КАРТА И ИНТЕГРАЦИИ                   -->
+    <!-- TAB 3: КАРТА И ТЕЛЕГРАМ БОТЫ                -->
     <!-- ========================================== -->
     <div id="content-map" class="hidden space-y-3.5">
       
-      <!-- PBMap Card & Live In-App Map Radar -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/90 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3.5">
+      <!-- PBMap Card -->
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/80 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-black">
               <i data-lucide="map" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="text-base font-black text-white">Интерактивный Радар Карты</h3>
-              <p class="text-xs text-cyan-300/80 font-mono">Pixel Royale Map Hub</p>
+              <h3 class="text-base font-black text-white">Карта Pixel Royale</h3>
+              <p class="text-xs text-cyan-300/80 font-mono">@PBMap_bot</p>
             </div>
           </div>
-          <button onclick="refreshMapRadar()" class="p-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 active:rotate-180 transition-all flex items-center gap-1 text-[11px] font-bold">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-            <span>Обновить</span>
-          </button>
-        </div>
-
-        <!-- Visual In-App Tactical Map View (Canvas / SVG Radar) -->
-        <div class="relative w-full aspect-square rounded-2xl bg-gray-950/90 border border-cyan-500/30 overflow-hidden flex flex-col items-center justify-center p-3 select-none">
-          <!-- Background Grid Lines -->
-          <div class="absolute inset-0 bg-[linear-gradient(to_right,#083344_1px,transparent_1px),linear-gradient(to_bottom,#083344_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
-          
-          <!-- Radar Scanning Line Effect -->
-          <div class="absolute inset-0 rounded-full border border-cyan-500/20 pointer-events-none scale-90"></div>
-          <div class="absolute inset-0 rounded-full border border-cyan-500/10 pointer-events-none scale-50"></div>
-          
-          <!-- Interactive Map Container -->
-          <div id="radarMapContainer" class="relative z-10 w-full h-full flex flex-col justify-between p-2 font-mono">
-            <div class="flex justify-between items-center text-[10px] text-cyan-400/90 font-bold">
-              <span class="flex items-center gap-1"><i data-lucide="compass" class="w-3 h-3"></i> СЕКТОР A (СЕВЕР)</span>
-              <span id="radarDropTimer" class="px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-600/50 text-cyan-300">СБРОС: --:--</span>
-            </div>
-
-            <!-- Sectors / Loot Points Grid -->
-            <div class="grid grid-cols-3 gap-2 my-auto">
-              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-emerald-500/40 text-center text-[11px] shadow">
-                <div class="text-emerald-400 font-bold">ЗОНА 1</div>
-                <div class="text-[9px] text-gray-400">Сундуки Tier 1</div>
-                <div class="text-[9px] text-emerald-300 mt-1 font-semibold">● ЧИСТО</div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-amber-500/50 text-center text-[11px] shadow">
-                <div class="text-amber-400 font-bold">ЦЕНТР</div>
-                <div class="text-[9px] text-gray-400">AirDrop Gold</div>
-                <div class="text-[9px] text-amber-300 mt-1 font-semibold animate-pulse">⚡ ВОЛНА СКОРО</div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-cyan-500/40 text-center text-[11px] shadow">
-                <div class="text-cyan-400 font-bold">ЗОНА 2</div>
-                <div class="text-[9px] text-gray-400">Сундуки Tier 2</div>
-                <div class="text-[9px] text-cyan-300 mt-1 font-semibold">● ЧИСТО</div>
-              </div>
-            </div>
-
-            <div class="flex justify-between items-center text-[10px] text-gray-400">
-              <span id="mapLastUpdated">Обновлено: только что</span>
-              <span class="text-cyan-400 font-bold">РАДАР АКТИВЕН</span>
-            </div>
-          </div>
+          <span class="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/40">ИНТЕГРИРОВАН</span>
         </div>
 
         <p class="text-xs text-gray-300 leading-relaxed">
-          Карта секторов позволяет планировать маршрут к сундукам прямо внутри приложения. Для получения полной графической карты с детализацией каждого пикселя откройте бота:
+          Телеграм-бот с актуальной картой зон, точек лута, сундуков аирдропа и безопасных секторов.
         </p>
 
         <button onclick="openBot('@PBMap_bot')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30">
@@ -448,7 +329,7 @@
         </button>
 
         <div class="flex gap-2 pt-1">
-          <button onclick="copyBotLink('@PBMap_bot')" class="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-[11px] font-bold border border-gray-700 active:scale-95 transition-all flex items-center justify-center gap-1">
+          <button onclick="copyBotLink('@PBMap_bot')" class="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-[11px] font-bold border border-gray-700 active:scale-95 transition-all flex items-center justify-center gap-1.5">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i> Скопировать @PBMap_bot
           </button>
         </div>
@@ -457,7 +338,7 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 5: НАСТРОЙКИ, РЕЖИМЫ И ОБНОВЛЕНИЯ       -->
+    <!-- TAB 4: НАСТРОЙКИ, РЕЖИМЫ И ТЕСТЫ            -->
     <!-- ========================================== -->
     <div id="content-settings" class="hidden space-y-3.5">
       
@@ -540,7 +421,7 @@
             <span>Поведение: 1 раз вибрирует 3 сек по заданному времени</span>
           </div>
           <p class="text-gray-300 leading-snug"><b>Авто-звук:</b> если звук выключен — включается на время оповещения, а ровно после наступления :00 выключается обратно. Если громкость была на нуле — поднимается до минимальной (1), а после :00 возвращается в 0.</p>
-          <p class="text-gray-400 leading-snug">Работает в фоне и при заблокированном экране через системный будильник Android (RTC_WAKEUP).</p>
+          <p class="text-gray-400 leading-snug">Работает в фоне и при выключенном экране через системный будильник Android (RTC_WAKEUP).</p>
         </div>
 
         <div class="grid grid-cols-2 gap-2 pt-1">
@@ -556,7 +437,52 @@
         </button>
       </div>
 
-      <!-- 3. Настраиваемый режим "СВОЙ" (Фонарик, Уведомление, Вибрация, Звук) -->
+      <!-- 3. Настройки "Не будить ночью" -->
+      <div class="p-5 rounded-3xl glass-card space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black">
+              <i data-lucide="moon" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-white">Режим "Не будить ночью"</h4>
+              <p class="text-[11px] text-gray-400">Авто-тишина во время сна</p>
+            </div>
+          </div>
+          <input type="checkbox" id="nightModeEnabled" checked onchange="saveConfig()" class="w-5 h-5 accent-indigo-500 rounded">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800">
+            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ С:</label>
+            <select id="nightStartHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
+              <option value="22">22:00 МСК</option>
+              <option value="23">23:00 МСК</option>
+              <option value="0" selected>00:00 МСК</option>
+              <option value="1">01:00 МСК</option>
+            </select>
+          </div>
+          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800">
+            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ ДО:</label>
+            <select id="nightEndHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
+              <option value="6">06:00 МСК</option>
+              <option value="7">07:00 МСК</option>
+              <option value="8" selected>08:00 МСК</option>
+              <option value="9">09:00 МСК</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-gray-800">
+          <div>
+            <div class="text-xs font-semibold text-white">Присылать без звука ночью</div>
+            <div class="text-[11px] text-gray-400">Без звуков и сирены, только текст</div>
+          </div>
+          <input type="checkbox" id="nightSilentMode" checked onchange="saveConfig()" class="w-4 h-4 accent-indigo-500 rounded">
+        </div>
+      </div>
+
+      <!-- 4. Настраиваемый режим "СВОЙ" (Фонарик, Уведомление, Вибрация, Звук) -->
       <div class="p-5 rounded-3xl glass-card border border-emerald-500/40 shadow-xl space-y-3.5 relative overflow-hidden">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
@@ -626,52 +552,7 @@
         </div>
       </div>
 
-      <!-- 4. Настройки "Не будить ночью" -->
-      <div class="p-5 rounded-3xl glass-card space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black">
-              <i data-lucide="moon" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <h4 class="text-sm font-bold text-white">Режим "Не будить ночью"</h4>
-              <p class="text-[11px] text-gray-400">Авто-тишина во время сна</p>
-            </div>
-          </div>
-          <input type="checkbox" id="nightModeEnabled" checked onchange="saveConfig()" class="w-5 h-5 accent-indigo-500 rounded">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800">
-            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ С:</label>
-            <select id="nightStartHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
-              <option value="22">22:00 МСК</option>
-              <option value="23">23:00 МСК</option>
-              <option value="0" selected>00:00 МСК</option>
-              <option value="1">01:00 МСК</option>
-            </select>
-          </div>
-          <div class="p-2.5 rounded-xl bg-black/50 border border-gray-800">
-            <label class="block text-[10px] text-gray-400 font-semibold mb-1">НЕ БУДИТЬ ДО:</label>
-            <select id="nightEndHour" onchange="saveConfig()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1 text-xs text-white">
-              <option value="6">06:00 МСК</option>
-              <option value="7">07:00 МСК</option>
-              <option value="8" selected>08:00 МСК</option>
-              <option value="9">09:00 МСК</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-gray-800">
-          <div>
-            <div class="text-xs font-semibold text-white">Присылать без звука ночью</div>
-            <div class="text-[11px] text-gray-400">Без звуков и сирены, только текст</div>
-          </div>
-          <input type="checkbox" id="nightSilentMode" checked onchange="saveConfig()" class="w-4 h-4 accent-indigo-500 rounded">
-        </div>
-      </div>
-
-      <!-- 5. АВТО-ОБНОВЛЕНИЕ -->
+      <!-- 5. АВТО-ОБНОВЛЕНИЕ (1 Клик без ручного скачивания) -->
       <div class="p-5 rounded-3xl glass-card space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
@@ -680,7 +561,7 @@
             </div>
             <div>
               <h4 class="text-sm font-bold text-white">Авто-обновление приложения</h4>
-              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">B4xq02r</span></p>
+              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">A2ds07u</span></p>
             </div>
           </div>
         </div>
@@ -705,12 +586,12 @@
   </main>
 
   <!-- FIXED BOTTOM STATUS BAR -->
-  <footer class="fixed bottom-0 left-0 right-0 z-40 px-4 py-2.5 bg-gray-950/95 border-t border-gray-800/80 backdrop-blur-xl flex items-center justify-between text-xs">
+  <footer class="fixed bottom-0 left-0 right-0 z-30 px-4 py-2.5 bg-gray-950/95 border-t border-gray-800/80 backdrop-blur-xl flex items-center justify-between text-xs">
     <div class="flex items-center gap-2">
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span class="font-medium text-gray-300">Фоновый трекер активен</span>
+      <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale B4xq02r</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds07u</span>
   </footer>
 
   <script>
@@ -719,15 +600,15 @@
     const AIRDROP_HOURS = [1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 21, 23];
 
     function switchTab(tabId) {
-      ['captcha', 'airdrop', 'tactics', 'map', 'settings'].forEach(id => {
+      ['captcha', 'airdrop', 'map', 'settings'].forEach(id => {
         const btn = document.getElementById('tab-' + id);
         const content = document.getElementById('content-' + id);
         if (!btn || !content) return;
         if (id === tabId) {
-          btn.className = "flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1";
+          btn.className = "flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1.5";
           content.classList.remove('hidden');
         } else {
-          btn.className = "flex-1 min-w-[75px] py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1";
+          btn.className = "flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5";
           content.classList.add('hidden');
         }
       });
@@ -1003,7 +884,7 @@
         return;
       }
 
-      const currentVer = "B4xq02r";
+      const currentVer = "A2ds07u";
       if (tag === currentVer) {
         if (statusText) statusText.innerHTML = `У вас установлена самая свежая версия (<b>${currentVer}</b>)`;
         if (badge) badge.classList.add('hidden');
@@ -1131,27 +1012,9 @@
       setTimeout(checkForUpdates, 3000);
     }
 
-    function refreshMapRadar() {
-      const updatedElem = document.getElementById('mapLastUpdated');
-      const now = new Date();
-      if (updatedElem) {
-        updatedElem.textContent = "Обновлено: " + now.toLocaleTimeString("ru-RU", { hour12: false });
-      }
-      const timerElem = document.getElementById('radarDropTimer');
-      const msk = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Moscow" }));
-      const curH = msk.getHours();
-      const curM = msk.getMinutes();
-      let nextH = AIRDROP_HOURS.find(h => (h > curH) || (h === curH && curM < 3));
-      if (nextH === undefined) nextH = 1;
-      if (timerElem) {
-        timerElem.textContent = "СБРОС: " + String(nextH).padStart(2, '0') + ":00 МСК";
-      }
-    }
-
     loadConfig();
     renderAirdropGrid();
     updateClocksAndTimers();
-    refreshMapRadar();
     setInterval(updateClocksAndTimers, 1000);
   </script>
 </body>
