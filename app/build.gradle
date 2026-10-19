@@ -10,8 +10,8 @@ android {
         applicationId "com.pixroyale.reminders"
         minSdk 24
         targetSdk 34
-        versionCode 8
-        versionName "A2ds03u"
+        versionCode 9
+        versionName "A2ds04u"
     }
 
     buildTypes {
