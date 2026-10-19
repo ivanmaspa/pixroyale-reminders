@@ -24,6 +24,7 @@ import androidx.core.app.NotificationCompat;
 public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
     public static final String ACTION_FIRE_REMINDER = "com.pixroyale.reminders.FIRE_REMINDER";
+    public static final String ACTION_RESTORE_AUDIO = "com.pixroyale.reminders.RESTORE_AUDIO";
     public static final String EXTRA_MODE = "extra_mode"; // "weak" or "extra"
     public static final String EXTRA_TITLE = "extra_title";
     public static final String EXTRA_TEXT = "extra_text";
@@ -31,9 +32,20 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
     private static final String CHANNEL_ID_SILENT = "pixel_royale_silent_channel";
     private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_channel";
+    private static final String PREFS_AUDIO = "PixRoyaleAudioState";
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+
+        // Handle Audio State Restoration at :00
+        if (ACTION_RESTORE_AUDIO.equals(action)) {
+            restoreAudioState(context);
+            // Reschedule next cycle
+            AlarmScheduler.rescheduleAll(context);
+            return;
+        }
+
         String mode = intent.getStringExtra(EXTRA_MODE);
         String title = intent.getStringExtra(EXTRA_TITLE);
         String text = intent.getStringExtra(EXTRA_TEXT);
@@ -73,15 +85,18 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         // Show push notification
         showNotification(context, title, text, "extra".equals(mode));
 
-        // Vibration behavior:
-        // "должно 1 раз вебрировать и по времени заданом в приложении"
+        // Vibration and Audio behavior:
         if (!isNight || !nightSilent) {
             if ("extra".equals(mode)) {
                 // Extra mode: play loud alarm and 5-sec alarm vibration
                 playLoudAlarm(context);
                 performVibration(context, 5000, true);
             } else {
-                // Weak mode: strictly 1 vibration pulse without sounds, duration 3 seconds (3000ms)
+                // Weak mode:
+                // Handle smart audio unmute & minimum volume
+                prepareWeakAudioState(context);
+
+                // Weak mode vibration: 3 seconds
                 performVibration(context, 3000, false);
             }
         }
@@ -92,6 +107,74 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         if (wakeLock != null && wakeLock.isHeld()) {
             try { wakeLock.release(); } catch (Exception ignored) {}
         }
+    }
+
+    private void prepareWeakAudioState(Context context) {
+        try {
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (am == null) return;
+
+            SharedPreferences audioPrefs = context.getSharedPreferences(PREFS_AUDIO, Context.MODE_PRIVATE);
+            boolean alreadySaved = audioPrefs.getBoolean("state_active", false);
+
+            if (!alreadySaved) {
+                int ringerMode = am.getRingerMode();
+                boolean wasMuted = (ringerMode != AudioManager.RINGER_MODE_NORMAL);
+                int notifVol = am.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
+                boolean wasZero = (notifVol == 0);
+
+                audioPrefs.edit()
+                        .putBoolean("state_active", true)
+                        .putBoolean("was_muted", wasMuted)
+                        .putInt("prev_ringer_mode", ringerMode)
+                        .putBoolean("was_zero_volume", wasZero)
+                        .putInt("prev_volume", notifVol)
+                        .apply();
+
+                // If muted/vibrate, switch to NORMAL mode without changing volume
+                if (wasMuted) {
+                    try {
+                        am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                    } catch (Exception ignored) {}
+                }
+
+                // If volume was 0 (slider at minimum), make it at least 1 (audible)
+                if (wasZero) {
+                    try {
+                        am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 1, 0);
+                    } catch (Exception ignored) {}
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public static void restoreAudioState(Context context) {
+        try {
+            SharedPreferences audioPrefs = context.getSharedPreferences(PREFS_AUDIO, Context.MODE_PRIVATE);
+            boolean stateActive = audioPrefs.getBoolean("state_active", false);
+            if (!stateActive) return;
+
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                boolean wasZero = audioPrefs.getBoolean("was_zero_volume", false);
+                int prevVol = audioPrefs.getInt("prev_volume", 0);
+                if (wasZero) {
+                    try {
+                        am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, prevVol, 0);
+                    } catch (Exception ignored) {}
+                }
+
+                boolean wasMuted = audioPrefs.getBoolean("was_muted", false);
+                int prevRinger = audioPrefs.getInt("prev_ringer_mode", AudioManager.RINGER_MODE_NORMAL);
+                if (wasMuted) {
+                    try {
+                        am.setRingerMode(prevRinger);
+                    } catch (Exception ignored) {}
+                }
+            }
+
+            audioPrefs.edit().clear().apply();
+        } catch (Exception ignored) {}
     }
 
     private void showNotification(Context context, String title, String text, boolean isAlarm) {
