@@ -57,7 +57,7 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds01u</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds03u</span>
         </div>
         <p class="text-[11px] text-gray-400">Капча 19:00 • Аирдропы • Карта</p>
       </div>
@@ -69,37 +69,24 @@
     </div>
   </header>
 
-  <!-- QUICK BOT INTEGRATION ACTION BAR (Always Accessible) -->
-  <section class="relative z-20 px-3.5 py-2.5 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md">
-    <div class="grid grid-cols-2 gap-2">
-      <!-- 1. Map Bot Integration Button -->
-      <button onclick="openBot('@PBMap_bot')" class="flex items-center justify-between px-3 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-950/80 via-sky-900/70 to-blue-900/60 border border-cyan-500/40 text-left active:scale-[0.98] transition-all glow-cyan">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
-            <i data-lucide="map" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <div class="text-[11px] font-black text-cyan-200">КАРТА ИГРЫ</div>
-            <div class="text-[9px] text-cyan-300/80 font-mono">@PBMap_bot</div>
-          </div>
+  <!-- QUICK MAP BOT INTEGRATION (Single Button) -->
+  <section class="relative z-20 px-3.5 py-2 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md">
+    <!-- Map Bot Integration Button -->
+    <button onclick="openBot('@PBMap_bot')" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-950/90 via-sky-900/80 to-blue-900/70 border border-cyan-500/50 text-left active:scale-[0.98] transition-all glow-cyan">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+          <i data-lucide="map" class="w-4 h-4"></i>
         </div>
-        <i data-lucide="external-link" class="w-3.5 h-3.5 text-cyan-400"></i>
-      </button>
-
-      <!-- 2. Game Bot Integration Button -->
-      <button onclick="openBot('https://t.me/PixRoyaleBot')" class="flex items-center justify-between px-3 py-2.5 rounded-2xl bg-gradient-to-r from-red-950/80 via-rose-900/70 to-orange-950/60 border border-red-500/40 text-left active:scale-[0.98] transition-all glow-red">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-xl bg-red-500/20 text-red-300 flex items-center justify-center">
-            <i data-lucide="gamepad-2" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <div class="text-[11px] font-black text-red-200">БОТ ИГРЫ</div>
-            <div class="text-[9px] text-red-300/80 font-mono">@PixRoyaleBot</div>
-          </div>
+        <div>
+          <div class="text-xs font-black text-cyan-100">КАРТА ИГРЫ (ОТКРЫТЬ В ТЕЛЕГРАМ)</div>
+          <div class="text-[10px] text-cyan-300/80 font-mono">@PBMap_bot</div>
         </div>
-        <i data-lucide="external-link" class="w-3.5 h-3.5 text-red-400"></i>
-      </button>
-    </div>
+      </div>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold text-[11px]">
+        <span>Открыть</span>
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+      </div>
+    </button>
   </section>
 
   <!-- NAVIGATION TABS -->
@@ -154,11 +141,6 @@
             <div class="text-sm font-black text-amber-400">19:00 — 19:03 (:03)</div>
           </div>
         </div>
-
-        <!-- Quick Launch to Bot -->
-        <button onclick="openBot('https://t.me/PixRoyaleBot')" class="mt-4 w-full py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/30">
-          <i data-lucide="send" class="w-4 h-4"></i> Открыть бота игры для капчи
-        </button>
       </div>
 
       <!-- Captcha Timing Settings Card -->
@@ -217,12 +199,9 @@
           Сундуки на карте доступны <b>с :00 до :03 минут</b> каждого назначенного часа.
         </p>
 
-        <div class="flex gap-2 mt-4">
-          <button onclick="openBot('@PBMap_bot')" class="flex-1 py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-600/30">
-            <i data-lucide="map" class="w-4 h-4"></i> Открыть карту сундуков
-          </button>
-          <button onclick="openBot('https://t.me/PixRoyaleBot')" class="flex-1 py-2.5 rounded-2xl bg-gray-800 hover:bg-gray-700 text-white font-extrabold text-xs border border-gray-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="gamepad-2" class="w-4 h-4"></i> В игру
+        <div class="mt-4">
+          <button onclick="openBot('@PBMap_bot')" class="w-full py-2.5 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-600/30">
+            <i data-lucide="map" class="w-4 h-4"></i> Открыть карту сундуков в @PBMap_bot
           </button>
         </div>
       </div>
@@ -294,30 +273,6 @@
         </button>
       </div>
 
-      <!-- PixRoyale Game Bot Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/80 via-gray-900 to-gray-950 border border-red-500/50 shadow-2xl space-y-3">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-2xl bg-red-500/20 text-red-300 flex items-center justify-center font-black">
-              <i data-lucide="gamepad-2" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <h3 class="text-base font-black text-white">Основной бот игры</h3>
-              <p class="text-xs text-red-300/80 font-mono">@PixRoyaleBot</p>
-            </div>
-          </div>
-          <span class="px-2 py-0.5 rounded-lg bg-red-500/20 text-red-300 text-[10px] font-bold">ОФИЦИАЛЬНЫЙ</span>
-        </div>
-
-        <p class="text-xs text-gray-300 leading-relaxed">
-          Быстрый переход в игру для ввода капчи в 19:00 и сбора аирдропов.
-        </p>
-
-        <button onclick="openBot('https://t.me/PixRoyaleBot')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-600/30">
-          <i data-lucide="play" class="w-4 h-4"></i> Открыть @PixRoyaleBot в Telegram
-        </button>
-      </div>
-
     </div>
 
     <!-- ========================================== -->
@@ -386,14 +341,14 @@
         <div class="p-3 rounded-2xl bg-black/40 border border-gray-800 space-y-1.5 text-[11px] text-gray-300">
           <div class="flex items-center gap-1.5 text-sky-400 font-semibold">
             <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-            <span>Паттерн: 3 сек вибро / 5 сек пауза прямо до :00</span>
+            <span>Поведение: 1 раз вибрирует 3 сек по заданному времени</span>
           </div>
-          <p class="text-gray-400 leading-snug">Телефон не издаёт лишних звуков, присылает системное уведомление и повторяет вибро 3с каждые 5с до старта события.</p>
+          <p class="text-gray-400 leading-snug">Работает в фоне и при выключенном экране через системный будильник Android (RTC_WAKEUP). Присылает пуш и 1 раз вибрирует ровно за указанное время до ивента.</p>
         </div>
 
         <div class="flex gap-2 pt-1">
-          <button onclick="testNormalReminder(18)" class="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест слабого режима (18с)
+          <button onclick="testSingleVib()" class="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибрации (3 сек)
           </button>
           <button onclick="stopAnyAlarm()" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs border border-gray-700 active:scale-95 transition-all">
             Стоп
@@ -456,7 +411,7 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds01u</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds03u</span>
   </footer>
 
   <script>
@@ -656,17 +611,40 @@
     }
 
     function saveConfig() {
-      localStorage.setItem('captchaLeadTime', document.getElementById('captchaLeadTime').value);
-      localStorage.setItem('captchaRepeats', document.getElementById('captchaRepeats').value);
-      localStorage.setItem('airdropLeadTime', document.getElementById('airdropLeadTime').value);
-      localStorage.setItem('airdropRepeats', document.getElementById('airdropRepeats').value);
-      localStorage.setItem('extraModeEnabled', document.getElementById('extraModeEnabled').checked);
-      localStorage.setItem('normalModeEnabled', document.getElementById('normalModeEnabled').checked);
-      localStorage.setItem('sirenTypeSelect', document.getElementById('sirenTypeSelect').value);
-      localStorage.setItem('nightModeEnabled', document.getElementById('nightModeEnabled').checked);
-      localStorage.setItem('nightStartHour', document.getElementById('nightStartHour').value);
-      localStorage.setItem('nightEndHour', document.getElementById('nightEndHour').value);
-      localStorage.setItem('nightSilentMode', document.getElementById('nightSilentMode').checked);
+      const captchaLead = parseInt(document.getElementById('captchaLeadTime').value || "3", 10);
+      const captchaReps = document.getElementById('captchaRepeats').value;
+      const airdropLead = parseInt(document.getElementById('airdropLeadTime').value || "5", 10);
+      const airdropReps = document.getElementById('airdropRepeats').value;
+      const extraOn = document.getElementById('extraModeEnabled').checked;
+      const normalOn = document.getElementById('normalModeEnabled').checked;
+      const sirenType = document.getElementById('sirenTypeSelect').value;
+      const nightOn = document.getElementById('nightModeEnabled').checked;
+      const nightStart = parseInt(document.getElementById('nightStartHour').value || "0", 10);
+      const nightEnd = parseInt(document.getElementById('nightEndHour').value || "8", 10);
+      const nightSilent = document.getElementById('nightSilentMode').checked;
+
+      localStorage.setItem('captchaLeadTime', captchaLead);
+      localStorage.setItem('captchaRepeats', captchaReps);
+      localStorage.setItem('airdropLeadTime', airdropLead);
+      localStorage.setItem('airdropRepeats', airdropReps);
+      localStorage.setItem('extraModeEnabled', extraOn);
+      localStorage.setItem('normalModeEnabled', normalOn);
+      localStorage.setItem('sirenTypeSelect', sirenType);
+      localStorage.setItem('nightModeEnabled', nightOn);
+      localStorage.setItem('nightStartHour', nightStart);
+      localStorage.setItem('nightEndHour', nightEnd);
+      localStorage.setItem('nightSilentMode', nightSilent);
+
+      // Sync with Android AlarmManager & background AlarmScheduler
+      if (window.AndroidBridge && window.AndroidBridge.syncConfigAndReschedule) {
+        window.AndroidBridge.syncConfigAndReschedule(captchaLead, airdropLead, extraOn, normalOn, nightStart, nightEnd, nightOn, nightSilent);
+      }
+    }
+
+    function testSingleVib() {
+      if (window.AndroidBridge && window.AndroidBridge.testSingleVibration) {
+        window.AndroidBridge.testSingleVibration();
+      }
     }
 
     function loadConfig() {
@@ -678,6 +656,9 @@
       checks.forEach(c => {
         if (localStorage.getItem(c) !== null) document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
       });
+
+      // Synchronize initially on load
+      saveConfig();
     }
 
     loadConfig();
