@@ -11,6 +11,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,6 +21,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import androidx.core.app.NotificationCompat;
+import java.io.File;
 
 public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
@@ -251,6 +253,34 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                 if (am != null) {
                     am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
                 }
+
+                SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+                String sirenType = prefs.getString("sirenTypeSelect", "nuclear");
+
+                if ("custom".equals(sirenType)) {
+                    File customFile = new File(context.getFilesDir(), "custom_alarm_sound");
+                    if (customFile.exists() && customFile.length() > 0) {
+                        try {
+                            MediaPlayer mp = new MediaPlayer();
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                mp.setAudioAttributes(new AudioAttributes.Builder()
+                                        .setUsage(AudioAttributes.USAGE_ALARM)
+                                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                        .build());
+                            } else {
+                                mp.setAudioStreamType(AudioManager.STREAM_ALARM);
+                            }
+                            mp.setDataSource(customFile.getAbsolutePath());
+                            mp.prepare();
+                            mp.start();
+                            Thread.sleep(5000);
+                            if (mp.isPlaying()) mp.stop();
+                            mp.release();
+                            return;
+                        } catch (Exception ignored) {}
+                    }
+                }
+
                 int sampleRate = 44100;
                 int bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
                 AudioAttributes aa = new AudioAttributes.Builder()
@@ -278,8 +308,15 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
                 while (System.currentTimeMillis() < end) {
                     for (int i = 0; i < bufferSize; i++) {
-                        double cycle = time % 1.2;
-                        double freq = (cycle < 0.6) ? 700 + 1100 * (cycle / 0.6) : 1800 - 1100 * ((cycle - 0.6) / 0.6);
+                        double freq;
+                        if ("fast".equals(sirenType)) {
+                            freq = ((int)(time / 0.3) % 2 == 0) ? 900.0 : 1400.0;
+                        } else if ("police".equals(sirenType)) {
+                            freq = 700.0 + 900.0 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 1.5 * time));
+                        } else {
+                            double cycle = time % 1.2;
+                            freq = (cycle < 0.6) ? 700 + 1100 * (cycle / 0.6) : 1800 - 1100 * ((cycle - 0.6) / 0.6);
+                        }
                         phase += 2.0 * Math.PI * freq / sampleRate;
                         if (phase > 2.0 * Math.PI) phase -= 2.0 * Math.PI;
                         double sample = Math.sin(phase) > 0 ? 0.95 : -0.95;
