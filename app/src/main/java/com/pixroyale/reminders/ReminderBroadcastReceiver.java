@@ -84,6 +84,28 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
+        // Check mode flags directly from SharedPreferences to guarantee user settings are respected
+        boolean extraEnabled = prefs.getBoolean("extraModeEnabled", true);
+        boolean normalEnabled = prefs.getBoolean("normalModeEnabled", true);
+
+        // If extra mode was triggered but user turned off extraModeEnabled, ignore it completely
+        if ("extra".equals(mode) && !extraEnabled) {
+            AlarmScheduler.rescheduleAll(context);
+            if (wakeLock != null && wakeLock.isHeld()) {
+                try { wakeLock.release(); } catch (Exception ignored) {}
+            }
+            return;
+        }
+
+        // If weak mode was triggered but user turned off normalModeEnabled, ignore it completely
+        if ("weak".equals(mode) && !normalEnabled) {
+            AlarmScheduler.rescheduleAll(context);
+            if (wakeLock != null && wakeLock.isHeld()) {
+                try { wakeLock.release(); } catch (Exception ignored) {}
+            }
+            return;
+        }
+
         // Show push notification
         showNotification(context, title, text, "extra".equals(mode));
 
