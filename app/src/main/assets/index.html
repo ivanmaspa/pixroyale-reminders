@@ -269,6 +269,12 @@
     }
 
     function playAlarmSiren(durationSec = 5) {
+      // 1. Call native Android Bridge: sets alarm stream volume to max, plays system siren ringtone, blinks flashlight every second
+      if (window.AndroidBridge && window.AndroidBridge.triggerExtraAlarm) {
+        window.AndroidBridge.triggerExtraAlarm(durationSec);
+      }
+
+      // 2. Web Audio synthesizer fallback for web preview
       try {
         const ctx = getAudioContext();
         stopAlarmSiren();
@@ -278,7 +284,6 @@
         alarmGain = ctx.createGain();
 
         alarmOsc.type = 'sawtooth';
-        // Siren frequency modulation (900Hz to 1600Hz)
         const now = ctx.currentTime;
         alarmOsc.frequency.setValueAtTime(850, now);
         for (let i = 0; i < durationSec * 2; i++) {
@@ -286,7 +291,6 @@
           alarmOsc.frequency.linearRampToValueAtTime(850, now + (i + 1) * 0.5);
         }
 
-        // Maximum volume
         alarmGain.gain.setValueAtTime(1.0, now);
         alarmGain.gain.exponentialRampToValueAtTime(0.01, now + durationSec);
 
@@ -296,7 +300,6 @@
         alarmOsc.start(now);
         alarmOsc.stop(now + durationSec);
 
-        // Strong vibration
         if (navigator.vibrate) {
           navigator.vibrate([500, 200, 500, 200, 1000]);
         }
@@ -308,6 +311,9 @@
     }
 
     function stopAlarmSiren() {
+      if (window.AndroidBridge && window.AndroidBridge.stopAlarm) {
+        window.AndroidBridge.stopAlarm();
+      }
       if (alarmOsc) {
         try { alarmOsc.stop(); } catch(e) {}
         alarmOsc = null;
