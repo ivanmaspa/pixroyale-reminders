@@ -712,6 +712,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public void copyToClipboard(String text) {
+            activity.runOnUiThread(() -> {
+                try {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText("PixRoyale", text);
+                    if (clipboard != null) {
+                        clipboard.setPrimaryClip(clip);
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
         public void openDownloadUrl(String url) {
             activity.runOnUiThread(() -> {
                 try {
