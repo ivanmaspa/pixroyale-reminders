@@ -361,23 +361,68 @@
     <!-- ========================================== -->
     <div id="content-map" class="hidden space-y-3.5">
       
-      <!-- PBMap Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/80 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3">
+      <!-- PBMap Card & Live In-App Map Radar -->
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/90 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-black">
               <i data-lucide="map" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="text-base font-black text-white">Карта Pixel Royale</h3>
-              <p class="text-xs text-cyan-300/80 font-mono">@PBMap_bot</p>
+              <h3 class="text-base font-black text-white">Интерактивный Радар Карты</h3>
+              <p class="text-xs text-cyan-300/80 font-mono">Pixel Royale Map Hub</p>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">ОФИЦИАЛЬНЫЙ</span>
+          <button onclick="refreshMapRadar()" class="p-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 active:rotate-180 transition-all flex items-center gap-1 text-[11px] font-bold">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Обновить</span>
+          </button>
+        </div>
+
+        <!-- Visual In-App Tactical Map View (Canvas / SVG Radar) -->
+        <div class="relative w-full aspect-square rounded-2xl bg-gray-950/90 border border-cyan-500/30 overflow-hidden flex flex-col items-center justify-center p-3 select-none">
+          <!-- Background Grid Lines -->
+          <div class="absolute inset-0 bg-[linear-gradient(to_right,#083344_1px,transparent_1px),linear-gradient(to_bottom,#083344_1px,transparent_1px)] bg-[size:24px_24px] opacity-40"></div>
+          
+          <!-- Radar Scanning Line Effect -->
+          <div class="absolute inset-0 rounded-full border border-cyan-500/20 pointer-events-none scale-90"></div>
+          <div class="absolute inset-0 rounded-full border border-cyan-500/10 pointer-events-none scale-50"></div>
+          
+          <!-- Interactive Map Container -->
+          <div id="radarMapContainer" class="relative z-10 w-full h-full flex flex-col justify-between p-2 font-mono">
+            <div class="flex justify-between items-center text-[10px] text-cyan-400/90 font-bold">
+              <span class="flex items-center gap-1"><i data-lucide="compass" class="w-3 h-3"></i> СЕКТОР A (СЕВЕР)</span>
+              <span id="radarDropTimer" class="px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-600/50 text-cyan-300">СБРОС: --:--</span>
+            </div>
+
+            <!-- Sectors / Loot Points Grid -->
+            <div class="grid grid-cols-3 gap-2 my-auto">
+              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-emerald-500/40 text-center text-[11px] shadow">
+                <div class="text-emerald-400 font-bold">ЗОНА 1</div>
+                <div class="text-[9px] text-gray-400">Сундуки Tier 1</div>
+                <div class="text-[9px] text-emerald-300 mt-1 font-semibold">● ЧИСТО</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-amber-500/50 text-center text-[11px] shadow">
+                <div class="text-amber-400 font-bold">ЦЕНТР</div>
+                <div class="text-[9px] text-gray-400">AirDrop Gold</div>
+                <div class="text-[9px] text-amber-300 mt-1 font-semibold animate-pulse">⚡ ВОЛНА СКОРО</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-gray-900/80 border border-cyan-500/40 text-center text-[11px] shadow">
+                <div class="text-cyan-400 font-bold">ЗОНА 2</div>
+                <div class="text-[9px] text-gray-400">Сундуки Tier 2</div>
+                <div class="text-[9px] text-cyan-300 mt-1 font-semibold">● ЧИСТО</div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center text-[10px] text-gray-400">
+              <span id="mapLastUpdated">Обновлено: только что</span>
+              <span class="text-cyan-400 font-bold">РАДАР АКТИВЕН</span>
+            </div>
+          </div>
         </div>
 
         <p class="text-xs text-gray-300 leading-relaxed">
-          Телеграм-бот с интерактивной картой точек сброса аирдропов, лута и безопасных секторов. Нажми кнопку ниже, чтобы перейти в бота:
+          Карта секторов позволяет планировать маршрут к сундукам прямо внутри приложения. Для получения полной графической карты с детализацией каждого пикселя откройте бота:
         </p>
 
         <button onclick="openBot('@PBMap_bot')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30">
@@ -950,14 +995,29 @@
     };
 
     function installDownloadedUpdate() {
-      if (latestAvailableUrl) {
-        if (window.AndroidBridge && window.AndroidBridge.openDownloadUrl) {
-          window.AndroidBridge.openDownloadUrl(latestAvailableUrl);
-        } else {
-          window.open(latestAvailableUrl, '_blank');
-        }
+      if (!latestAvailableUrl) return;
+      const btnInstall = document.getElementById('btnInstallUpdate');
+      const statusText = document.getElementById('updateStatusText');
+      if (btnInstall) btnInstall.disabled = true;
+      if (statusText) statusText.textContent = "Скачивание обновления...";
+
+      if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
+        window.AndroidBridge.downloadAndInstallApk(latestAvailableUrl);
+      } else if (window.AndroidBridge && window.AndroidBridge.openDownloadUrl) {
+        window.AndroidBridge.openDownloadUrl(latestAvailableUrl);
+      } else {
+        window.open(latestAvailableUrl, '_blank');
       }
     }
+
+    window.onDownloadProgress = function(pct, text) {
+      const statusText = document.getElementById('updateStatusText');
+      const btnInstall = document.getElementById('btnInstallUpdate');
+      if (statusText) statusText.textContent = text || ("Загрузка: " + pct + "%");
+      if (pct < 0) {
+        if (btnInstall) btnInstall.disabled = false;
+      }
+    };
 
     function saveConfig() {
       const captchaLead = parseInt(document.getElementById('captchaLeadTime').value || "3", 10);
@@ -1049,9 +1109,27 @@
       setTimeout(checkForUpdates, 3000);
     }
 
+    function refreshMapRadar() {
+      const updatedElem = document.getElementById('mapLastUpdated');
+      const now = new Date();
+      if (updatedElem) {
+        updatedElem.textContent = "Обновлено: " + now.toLocaleTimeString("ru-RU", { hour12: false });
+      }
+      const timerElem = document.getElementById('radarDropTimer');
+      const msk = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Moscow" }));
+      const curH = msk.getHours();
+      const curM = msk.getMinutes();
+      let nextH = AIRDROP_HOURS.find(h => (h > curH) || (h === curH && curM < 3));
+      if (nextH === undefined) nextH = 1;
+      if (timerElem) {
+        timerElem.textContent = "СБРОС: " + String(nextH).padStart(2, '0') + ":00 МСК";
+      }
+    }
+
     loadConfig();
     renderAirdropGrid();
     updateClocksAndTimers();
+    refreshMapRadar();
     setInterval(updateClocksAndTimers, 1000);
   </script>
 </body>
