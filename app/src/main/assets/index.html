@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Pixel Royale Elite Tracker B4xq01r</title>
+  <title>Pixel Royale Elite Tracker B4xq02r</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -80,7 +80,7 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-black text-sm tracking-tight text-white uppercase">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-red-500/20 to-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-black">B4xq01r</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-red-500/20 to-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-black">B4xq02r</span>
         </div>
         <p class="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -162,8 +162,20 @@
           Окно сдачи: строго <b>с 19:00 до 19:03 МСК</b>. Своевременный вход гарантирует получение награды без риска бана или потери очков.
         </p>
 
+        <!-- Exact Time bounds box from A2ds06u -->
+        <div class="mt-3.5 p-3.5 rounded-2xl bg-black/60 border border-gray-800 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-gray-400">Точный старт:</div>
+            <div class="text-sm font-black text-white">19:00:00 МСК</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[11px] text-gray-400">Активное окно:</div>
+            <div class="text-sm font-black text-amber-400">19:00 — 19:03 (:03)</div>
+          </div>
+        </div>
+
         <!-- Live Visual Progress Bar for Captcha Window -->
-        <div class="mt-4 p-3 rounded-2xl bg-black/60 border border-gray-800 space-y-2">
+        <div class="mt-3 p-3 rounded-2xl bg-black/60 border border-gray-800 space-y-2">
           <div class="flex justify-between text-[11px] font-bold">
             <span class="text-gray-400">Статус окна:</span>
             <span id="captchaStatusText" class="text-amber-400">Ожидание 19:00</span>
@@ -177,12 +189,18 @@
           </div>
         </div>
 
-        <div class="mt-3.5 flex gap-2">
-          <button onclick="testExtraAlarm()" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="bell" class="w-4 h-4"></i> Тест тревоги
+        <div class="mt-3.5 grid grid-cols-2 gap-2">
+          <button onclick="testExtraAlarm()" class="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="bell-ring" class="w-4 h-4"></i> Тест тревоги
           </button>
-          <button onclick="openBot('@PBMap_bot')" class="px-3.5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-cyan-300 font-bold text-xs border border-cyan-500/30 active:scale-95 transition-all flex items-center gap-1.5">
-            <i data-lucide="bot" class="w-4 h-4"></i> Бот игры
+          <button onclick="testNormalReminder(15)" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/40 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест слабого вибро
+          </button>
+        </div>
+
+        <div class="mt-2">
+          <button onclick="openBot('@PBMap_bot')" class="w-full py-2.5 rounded-xl bg-cyan-950 hover:bg-cyan-900/90 text-cyan-300 font-bold text-xs border border-cyan-500/40 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="map" class="w-4 h-4"></i> Открыть карту @PBMap_bot
           </button>
         </div>
       </div>
@@ -516,22 +534,26 @@
           <input type="checkbox" id="normalModeEnabled" checked onchange="saveConfig()" class="w-5 h-5 accent-sky-500 rounded">
         </div>
 
-        <div class="p-3 rounded-2xl bg-black/40 border border-gray-800 space-y-1.5 text-[11px] text-gray-300">
+        <div class="p-3 rounded-2xl bg-black/40 border border-gray-800 space-y-2 text-[11px] text-gray-300">
           <div class="flex items-center gap-1.5 text-sky-400 font-semibold">
             <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
             <span>Поведение: 1 раз вибрирует 3 сек по заданному времени</span>
           </div>
-          <p class="text-gray-400 leading-snug">Работает в фоне и при выключенном экране через системный будильник Android (RTC_WAKEUP).</p>
+          <p class="text-gray-300 leading-snug"><b>Авто-звук:</b> если звук выключен — включается на время оповещения, а ровно после наступления :00 выключается обратно. Если громкость была на нуле — поднимается до минимальной (1), а после :00 возвращается в 0.</p>
+          <p class="text-gray-400 leading-snug">Работает в фоне и при заблокированном экране через системный будильник Android (RTC_WAKEUP).</p>
         </div>
 
-        <div class="flex gap-2 pt-1">
-          <button onclick="testSingleVib()" class="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибрации (3 сек)
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="testSingleVib()" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибро (3с)
           </button>
-          <button onclick="stopAnyAlarm()" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs border border-gray-700 active:scale-95 transition-all">
-            Стоп
+          <button onclick="testNormalReminder(18)" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-300 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="bell" class="w-4 h-4"></i> Тест цикла вибро
           </button>
         </div>
+        <button onclick="stopAnyAlarm()" class="w-full py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-semibold border border-gray-800 active:scale-95 transition-all">
+          Остановить тест
+        </button>
       </div>
 
       <!-- 3. Настраиваемый режим "СВОЙ" (Фонарик, Уведомление, Вибрация, Звук) -->
@@ -658,7 +680,7 @@
             </div>
             <div>
               <h4 class="text-sm font-bold text-white">Авто-обновление приложения</h4>
-              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">B4xq01r</span></p>
+              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">B4xq02r</span></p>
             </div>
           </div>
         </div>
@@ -688,7 +710,7 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span class="font-medium text-gray-300">Фоновый трекер активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale B4xq01r</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale B4xq02r</span>
   </footer>
 
   <script>
@@ -981,7 +1003,7 @@
         return;
       }
 
-      const currentVer = "B4xq01r";
+      const currentVer = "B4xq02r";
       if (tag === currentVer) {
         if (statusText) statusText.innerHTML = `У вас установлена самая свежая версия (<b>${currentVer}</b>)`;
         if (badge) badge.classList.add('hidden');
