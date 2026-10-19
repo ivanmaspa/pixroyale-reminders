@@ -13,6 +13,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -24,17 +25,25 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.provider.OpenableColumns;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_PICK_AUDIO = 202;
+    private static final String CUSTOM_SOUND_FILENAME = "custom_alarm_sound";
+
     private WebView webView;
     private Ringtone currentRingtone;
+    private MediaPlayer customMediaPlayer;
     private CameraManager cameraManager;
     private String cameraId;
     private Handler strobeHandler = new Handler(Looper.getMainLooper());
@@ -174,9 +183,34 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ignored) {}
     }
 
-    // High-pitched loud piercing siren synthesizer using AudioTrack STREAM_ALARM (loudspeaker)
+    // High-pitched loud piercing siren synthesizer or Custom File playback on STREAM_ALARM (loudspeaker)
     private void startLoudSirenAudio(String sirenType) {
         stopLoudSirenAudio();
+
+        if ("custom".equals(sirenType)) {
+            File customFile = new File(getFilesDir(), CUSTOM_SOUND_FILENAME);
+            if (customFile.exists() && customFile.length() > 0) {
+                try {
+                    customMediaPlayer = new MediaPlayer();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        customMediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build());
+                    } else {
+                        customMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                    }
+                    customMediaPlayer.setDataSource(customFile.getAbsolutePath());
+                    customMediaPlayer.setLooping(true);
+                    customMediaPlayer.prepare();
+                    customMediaPlayer.start();
+                    return;
+                } catch (Exception ignored) {
+                    // Fallback to nuclear synthesizer if custom audio fails
+                }
+            }
+        }
+
         isSirenRunning = true;
 
         sirenThread = new Thread(() -> {
@@ -254,6 +288,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopLoudSirenAudio() {
+        if (customMediaPlayer != null) {
+            try {
+                if (customMediaPlayer.isPlaying()) {
+                    customMediaPlayer.stop();
+                }
+                customMediaPlayer.release();
+            } catch (Exception ignored) {}
+            customMediaPlayer = null;
+        }
+
         isSirenRunning = false;
         if (sirenThread != null) {
             try {
@@ -447,6 +491,66 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    public void startAudioFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            startActivityForResult(Intent.createChooser(intent, "Выберите звук тревоги"), REQUEST_PICK_AUDIO);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_PICK_AUDIO && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri audioUri = data.getData();
+            String displayName = getFileNameFromUri(audioUri);
+            boolean success = copyAudioToInternalStorage(audioUri);
+            if (success && webView != null) {
+                // Save custom sound name in SharedPreferences
+                getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE)
+                        .edit()
+                        .putString("customSoundName", displayName)
+                        .apply();
+
+                // Notify web UI
+                webView.post(() -> webView.evaluateJavascript("if(window.onCustomSoundPicked) { onCustomSoundPicked(" + 
+                        android.database.DatabaseUtils.sqlEscapeString(displayName) + "); }", null));
+            }
+        }
+    }
+
+    private String getFileNameFromUri(Uri uri) {
+        String name = "Мой_звук.mp3";
+        try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (nameIdx >= 0) {
+                    name = cursor.getString(nameIdx);
+                }
+            }
+        } catch (Exception ignored) {}
+        return name;
+    }
+
+    private boolean copyAudioToInternalStorage(Uri uri) {
+        File dest = new File(getFilesDir(), CUSTOM_SOUND_FILENAME);
+        try (InputStream in = getContentResolver().openInputStream(uri);
+             FileOutputStream out = new FileOutputStream(dest)) {
+            if (in == null) return false;
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            out.flush();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     @Override
     public void onBackPressed() {
         if (webView != null && webView.canGoBack()) {
@@ -520,6 +624,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception ignored) {}
             });
+        }
+
+        @JavascriptInterface
+        public void pickCustomAudioFile() {
+            activity.runOnUiThread(activity::startAudioFilePicker);
+        }
+
+        @JavascriptInterface
+        public String getCustomSoundName() {
+            android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+            return prefs.getString("customSoundName", "");
         }
 
         @JavascriptInterface
