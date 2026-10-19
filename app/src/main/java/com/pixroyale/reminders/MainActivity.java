@@ -725,6 +725,107 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public void downloadAndInstallApk(String downloadUrl) {
+            new Thread(() -> {
+                try {
+                    activity.runOnUiThread(() -> {
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(10, 'Подключение к серверу...'); }", null);
+                        }
+                    });
+
+                    java.net.URL url = new java.net.URL(downloadUrl);
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "PixRoyaleApp");
+                    conn.setInstanceFollowRedirects(true);
+                    conn.connect();
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == java.net.HttpURLConnection.HTTP_MOVED_PERM || 
+                        responseCode == java.net.HttpURLConnection.HTTP_MOVED_TEMP || 
+                        responseCode == 307 || responseCode == 308) {
+                        String newUrl = conn.getHeaderField("Location");
+                        conn = (java.net.HttpURLConnection) new java.net.URL(newUrl).openConnection();
+                        conn.setRequestProperty("User-Agent", "PixRoyaleApp");
+                        conn.connect();
+                    }
+
+                    int fileLength = conn.getContentLength();
+                    File cacheDir = activity.getExternalCacheDir();
+                    if (cacheDir == null) cacheDir = activity.getCacheDir();
+                    File outputFile = new File(cacheDir, "update.apk");
+                    if (outputFile.exists()) outputFile.delete();
+
+                    java.io.InputStream input = conn.getInputStream();
+                    java.io.OutputStream output = new java.io.FileOutputStream(outputFile);
+
+                    byte[] data = new byte[8192];
+                    long total = 0;
+                    int count;
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        if (fileLength > 0) {
+                            int progress = (int) (total * 100 / fileLength);
+                            activity.runOnUiThread(() -> {
+                                if (activity.webView != null) {
+                                    activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(" + progress + ", 'Загрузка: " + progress + "%'); }", null);
+                                }
+                            });
+                        }
+                        output.write(data, 0, count);
+                    }
+                    output.flush();
+                    output.close();
+                    input.close();
+
+                    activity.runOnUiThread(() -> {
+                        try {
+                            if (activity.webView != null) {
+                                activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(100, 'Запуск установки...'); }", null);
+                            }
+
+                            Intent installIntent = new Intent(Intent.ACTION_VIEW);
+                            installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            Uri apkUri;
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                apkUri = androidx.core.content.FileProvider.getUriForFile(
+                                        activity,
+                                        activity.getPackageName() + ".fileprovider",
+                                        outputFile
+                                );
+                            } else {
+                                apkUri = Uri.fromFile(outputFile);
+                            }
+
+                            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                            activity.startActivity(installIntent);
+                        } catch (Exception e) {
+                            // Fallback to browser intent if FileProvider or installer fails
+                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            activity.startActivity(fallback);
+                        }
+                    });
+
+                } catch (Exception err) {
+                    activity.runOnUiThread(() -> {
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Ошибка: " + err.getMessage() + "'); }", null);
+                        }
+                        // Fallback to browser download
+                        try {
+                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
+                            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            activity.startActivity(fallback);
+                        } catch (Exception ignored) {}
+                    });
+                }
+            }).start();
+        }
+
+        @JavascriptInterface
         public void openDownloadUrl(String url) {
             activity.runOnUiThread(() -> {
                 try {
