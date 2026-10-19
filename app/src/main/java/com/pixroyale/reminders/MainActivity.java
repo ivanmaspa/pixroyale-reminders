@@ -68,11 +68,10 @@ public class MainActivity extends AppCompatActivity {
         webView = new WebView(this);
         setContentView(webView);
 
-        // Auto request camera runtime permission if needed
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(android.Manifest.permission.CAMERA) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        // Auto request notification runtime permission on Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{
-                        android.Manifest.permission.CAMERA,
                         android.Manifest.permission.POST_NOTIFICATIONS
                 }, 101);
             }
@@ -475,6 +474,36 @@ public class MainActivity extends AppCompatActivity {
         startNormalVibrationLoop(durationUntilZeroSec > 0 ? durationUntilZeroSec : 15);
     }
 
+    // 3. CUSTOM MODE: User picks combinations of Notification, Vibration, Flashlight, and Sound
+    public void startNativeCustomReminder(int durationSec, boolean useSound, boolean useVib, boolean useFlash, boolean useNotif, String sirenType) {
+        stopAllAlarms();
+
+        if (useNotif) {
+            showSystemNotification("Пиксель Рояль: Свой режим", "Сработал настраиваемый режим напоминания!", useSound);
+        }
+
+        if (useSound) {
+            setMaxVolumes();
+            startLoudSirenAudio(sirenType);
+        }
+
+        if (useVib) {
+            if (useSound) {
+                triggerExtraVibration();
+            } else {
+                startNormalVibrationLoop(durationSec > 0 ? durationSec : 15);
+            }
+        }
+
+        if (useFlash) {
+            startFlashStrobe(durationSec > 0 ? durationSec : 10);
+        }
+
+        if (durationSec > 0) {
+            strobeHandler.postDelayed(this::stopAllAlarms, durationSec * 1000L);
+        }
+    }
+
     public void stopAllAlarms() {
         stopLoudSirenAudio();
         stopNormalVibrationLoop();
@@ -583,7 +612,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent, String sirenType) {
+        public void triggerCustomReminder(int seconds, boolean useSound, boolean useVib, boolean useFlash, boolean useNotif, String sirenType) {
+            activity.runOnUiThread(() -> activity.startNativeCustomReminder(seconds, useSound, useVib, useFlash, useNotif, sirenType));
+        }
+
+        @JavascriptInterface
+        public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent, String sirenType, boolean customOn, boolean customFlash, boolean customVib, boolean customSound, boolean customNotif) {
             activity.runOnUiThread(() -> {
                 try {
                     android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
@@ -597,8 +631,93 @@ public class MainActivity extends AppCompatActivity {
                             .putBoolean("nightModeEnabled", nightOn)
                             .putBoolean("nightSilentMode", nightSilent)
                             .putString("sirenTypeSelect", sirenType != null ? sirenType : "nuclear")
+                            .putBoolean("customModeEnabled", customOn)
+                            .putBoolean("customFlash", customFlash)
+                            .putBoolean("customVib", customVib)
+                            .putBoolean("customSound", customSound)
+                            .putBoolean("customNotif", customNotif)
                             .apply();
                     AlarmScheduler.rescheduleAll(activity);
+                } catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface
+        public void checkForUpdates() {
+            new Thread(() -> {
+                try {
+                    java.net.URL url = new java.net.URL("https://api.github.com/repos/ivanmaspa/pixroyale-reminders/releases/latest");
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "PixRoyaleApp");
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(8000);
+
+                    if (conn.getResponseCode() == 200) {
+                        java.io.InputStream in = conn.getInputStream();
+                        java.util.Scanner scanner = new java.util.Scanner(in, "UTF-8").useDelimiter("\\A");
+                        String response = scanner.hasNext() ? scanner.next() : "";
+                        scanner.close();
+                        in.close();
+
+                        org.json.JSONObject release = new org.json.JSONObject(response);
+                        String latestTag = release.optString("tag_name", "");
+                        String releaseName = release.optString("name", latestTag);
+                        String htmlUrl = release.optString("html_url", "");
+                        String downloadUrl = "";
+
+                        org.json.JSONArray assets = release.optJSONArray("assets");
+                        if (assets != null) {
+                            for (int i = 0; i < assets.length(); i++) {
+                                org.json.JSONObject asset = assets.getJSONObject(i);
+                                String name = asset.optString("name", "");
+                                if (name.endsWith(".apk")) {
+                                    downloadUrl = asset.optString("browser_download_url", "");
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (downloadUrl.isEmpty() && !latestTag.isEmpty()) {
+                            downloadUrl = "https://github.com/ivanmaspa/pixroyale-reminders/releases/download/" + latestTag + "/PixRoyale_" + latestTag + ".apk";
+                        }
+
+                        final String fTag = latestTag;
+                        final String fName = releaseName;
+                        final String fUrl = downloadUrl.isEmpty() ? htmlUrl : downloadUrl;
+
+                        activity.runOnUiThread(() -> {
+                            if (activity.webView != null) {
+                                String js = String.format("if (window.onUpdateCheckResult) { window.onUpdateCheckResult('%s', '%s', '%s'); }",
+                                        fTag.replace("'", "\\'"),
+                                        fName.replace("'", "\\'"),
+                                        fUrl.replace("'", "\\'"));
+                                activity.webView.evaluateJavascript(js, null);
+                            }
+                        });
+                    } else {
+                        activity.runOnUiThread(() -> {
+                            if (activity.webView != null) {
+                                activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Ошибка соединения', null); }", null);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    activity.runOnUiThread(() -> {
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Ошибка проверки: " + e.getMessage() + "', null); }", null);
+                        }
+                    });
+                }
+            }).start();
+        }
+
+        @JavascriptInterface
+        public void openDownloadUrl(String url) {
+            activity.runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(intent);
                 } catch (Exception ignored) {}
             });
         }
