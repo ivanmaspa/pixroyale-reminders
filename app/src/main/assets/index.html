@@ -57,7 +57,7 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h1 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds03u</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">A2ds04u</span>
         </div>
         <p class="text-[11px] text-gray-400">Капча 19:00 • Аирдропы • Карта</p>
       </div>
@@ -300,16 +300,31 @@
         </p>
 
         <!-- Siren Selection -->
-        <div class="p-3 rounded-2xl bg-black/50 border border-red-900/50 flex items-center justify-between">
-          <div>
-            <div class="text-xs font-bold text-white">Тип сирены:</div>
-            <div class="text-[11px] text-gray-400">Звуковой тон тревоги</div>
+        <div class="space-y-2">
+          <div class="p-3 rounded-2xl bg-black/50 border border-red-900/50 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-bold text-white">Звук тревоги:</div>
+              <div class="text-[11px] text-gray-400">Сирена или свой файл</div>
+            </div>
+            <select id="sirenTypeSelect" onchange="saveConfig()" class="bg-gray-900 border border-red-700/60 rounded-xl px-2.5 py-1 text-xs text-red-300 font-bold outline-none max-w-[160px]">
+              <option value="nuclear" selected>Ядерная тревога</option>
+              <option value="fast">Быстрая сирена 911</option>
+              <option value="police">Полицейский вой</option>
+              <option value="custom" id="optCustomSound">🎵 Мой звук</option>
+            </select>
           </div>
-          <select id="sirenTypeSelect" onchange="saveConfig()" class="bg-gray-900 border border-red-700/60 rounded-xl px-2.5 py-1 text-xs text-red-300 font-bold outline-none">
-            <option value="nuclear" selected>Ядерная тревога (Громкая)</option>
-            <option value="fast">Быстрая сирена 911</option>
-            <option value="police">Полицейский вой</option>
-          </select>
+
+          <!-- Button to Pick Custom Sound File -->
+          <div class="p-3 rounded-2xl bg-black/40 border border-red-900/40 flex items-center justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-semibold text-white truncate" id="customSoundLabel">Свой звук: не выбран</div>
+              <div class="text-[10px] text-gray-400">Поддерживаются MP3, WAV, OGG, M4A</div>
+            </div>
+            <button onclick="pickCustomSound()" class="px-3 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/40 font-bold text-xs active:scale-95 transition-all flex items-center gap-1.5 shrink-0">
+              <i data-lucide="music" class="w-3.5 h-3.5"></i>
+              <span>Выбрать файл</span>
+            </button>
+          </div>
         </div>
 
         <!-- Extra mode test buttons -->
@@ -411,7 +426,7 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds03u</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds04u</span>
   </footer>
 
   <script>
@@ -647,6 +662,22 @@
       }
     }
 
+    function pickCustomSound() {
+      if (window.AndroidBridge && window.AndroidBridge.pickCustomAudioFile) {
+        window.AndroidBridge.pickCustomAudioFile();
+      } else {
+        alert("Выбор файла поддерживается в приложении на Android");
+      }
+    }
+
+    function onCustomSoundPicked(fileName) {
+      if (fileName) {
+        document.getElementById('customSoundLabel').textContent = "Свой звук: " + fileName;
+        document.getElementById('sirenTypeSelect').value = "custom";
+        saveConfig();
+      }
+    }
+
     function loadConfig() {
       const keys = ['captchaLeadTime', 'captchaRepeats', 'airdropLeadTime', 'airdropRepeats', 'sirenTypeSelect', 'nightStartHour', 'nightEndHour'];
       keys.forEach(k => {
@@ -656,6 +687,14 @@
       checks.forEach(c => {
         if (localStorage.getItem(c) !== null) document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
       });
+
+      // Check if custom sound name exists in bridge
+      if (window.AndroidBridge && window.AndroidBridge.getCustomSoundName) {
+        const customName = window.AndroidBridge.getCustomSoundName();
+        if (customName && customName.length > 0) {
+          document.getElementById('customSoundLabel').textContent = "Свой звук: " + customName;
+        }
+      }
 
       // Synchronize initially on load
       saveConfig();
