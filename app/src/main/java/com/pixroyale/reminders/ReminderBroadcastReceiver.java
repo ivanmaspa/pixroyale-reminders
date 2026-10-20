@@ -12,9 +12,10 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.PowerManager;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
@@ -27,12 +28,11 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
 
     public static final String ACTION_FIRE_REMINDER = "com.pixroyale.reminders.FIRE_REMINDER";
     public static final String ACTION_RESTORE_AUDIO = "com.pixroyale.reminders.RESTORE_AUDIO";
-    public static final String EXTRA_MODE = "extra_mode"; // "weak" or "extra"
+    public static final String EXTRA_MODE = "extra_mode";
     public static final String EXTRA_TITLE = "extra_title";
     public static final String EXTRA_TEXT = "extra_text";
-    public static final String EXTRA_DURATION = "extra_duration"; // in seconds
 
-    private static final String CHANNEL_ID_SILENT = "pixel_royale_reminder_v3";
+    private static final String CHANNEL_ID_REMINDER = "pixel_royale_reminder_v3";
     private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_v3";
     private static final String PREFS_AUDIO = "PixRoyaleAudioState";
 
@@ -40,10 +40,8 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        // Handle Audio State Restoration at :00
         if (ACTION_RESTORE_AUDIO.equals(action)) {
             restoreAudioState(context);
-            // Reschedule next cycle
             AlarmScheduler.rescheduleAll(context);
             return;
         }
@@ -51,27 +49,27 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         String mode = intent.getStringExtra(EXTRA_MODE);
         String title = intent.getStringExtra(EXTRA_TITLE);
         String text = intent.getStringExtra(EXTRA_TEXT);
-        int durationSec = intent.getIntExtra(EXTRA_DURATION, 3);
 
-        if (title == null) title = "Пиксель Рояль";
+        if (title == null) title = "Pixel Royale";
         if (text == null) text = "Время ивента!";
 
-        // Acquire WakeLock to guarantee device wakes up from deep sleep / doze mode
+        // Acquire WakeLock for 15s to guarantee vibration & audio play completely
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wakeLock = null;
         if (pm != null) {
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "PixRoyale:AlarmWakeLock");
-            wakeLock.acquire(15 * 1000L); // 10 seconds max
+            wakeLock = pm.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE,
+                    "PixRoyale:AlarmWakeLock"
+            );
+            wakeLock.acquire(15 * 1000L);
         }
 
-        // Check Night Mode preferences
         SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
         boolean nightEnabled = prefs.getBoolean("nightModeEnabled", true);
         boolean nightSilent = prefs.getBoolean("nightSilentMode", true);
         int nightStart = prefs.getInt("nightStartHour", 0);
         int nightEnd = prefs.getInt("nightEndHour", 8);
 
-        // Get current MSK hour
         java.util.Calendar cal = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("Europe/Moscow"));
         int curH = cal.get(java.util.Calendar.HOUR_OF_DAY);
 
@@ -84,84 +82,66 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             }
         }
 
-        // Check mode flags directly from SharedPreferences to guarantee user settings are respected
         boolean extraEnabled = prefs.getBoolean("extraModeEnabled", true);
-        boolean normalEnabled = prefs.getBoolean("normalModeEnabled", true);
+        boolean normalEnabled = prefs.getBoolean("normalModeEnabled", false);
         boolean customEnabled = prefs.getBoolean("customModeEnabled", false);
         boolean customFlash = prefs.getBoolean("customFlash", false);
         boolean customVib = prefs.getBoolean("customVib", true);
-        boolean customSound = prefs.getBoolean("customSound", false);
+        boolean customSound = prefs.getBoolean("customSound", true);
         boolean customNotif = prefs.getBoolean("customNotif", true);
 
-        // If extra mode was triggered but user turned off extraModeEnabled, ignore it completely
+        int vibStrength = prefs.getInt("vibStrength", 4);
+        int soundVolume = prefs.getInt("soundVolume", 50);
+        String soundType = prefs.getString("soundType", "chime");
+
         if ("extra".equals(mode) && !extraEnabled) {
             AlarmScheduler.rescheduleAll(context);
-            if (wakeLock != null && wakeLock.isHeld()) {
-                try { wakeLock.release(); } catch (Exception ignored) {}
-            }
             return;
         }
-
-        // If weak mode was triggered but user turned off normalModeEnabled, ignore it completely
         if ("weak".equals(mode) && !normalEnabled) {
             AlarmScheduler.rescheduleAll(context);
-            if (wakeLock != null && wakeLock.isHeld()) {
-                try { wakeLock.release(); } catch (Exception ignored) {}
-            }
             return;
         }
-
-        // If custom mode was triggered but user turned off customModeEnabled, ignore it
         if ("custom".equals(mode) && !customEnabled) {
             AlarmScheduler.rescheduleAll(context);
-            if (wakeLock != null && wakeLock.isHeld()) {
-                try { wakeLock.release(); } catch (Exception ignored) {}
-            }
             return;
         }
 
-        // Show push notification
-        if ("custom".equals(mode)) {
-            if (customNotif) {
-                showNotification(context, title, text, customSound);
-            }
-        } else {
+        // Show system notification
+        if (!"custom".equals(mode) || customNotif) {
             showNotification(context, title, text, "extra".equals(mode));
         }
 
-        // Vibration, Flash, and Audio behavior:
+        // Handle Audio & Vibration if not in silent night mode
         if (!isNight || !nightSilent) {
             if ("custom".equals(mode)) {
                 if (customSound) {
-                    playLoudAlarm(context);
+                    playNotificationTone(context, soundVolume, soundType);
                 }
                 if (customVib) {
-                    performVibration(context, 3000, customSound);
+                    performConfiguredVibration(context, vibStrength, false);
                 }
                 if (customFlash) {
-                    pulseFlashlight(context, 5000);
+                    pulseFlashlight(context, 4000);
                 }
             } else if ("extra".equals(mode)) {
-                // Extra mode: play loud alarm and 5-sec alarm vibration
-                playLoudAlarm(context);
-                performVibration(context, 5000, true);
+                // Enhanced Mode: gentle melodic sound at user volume + heavy vibration + flashlight
+                playNotificationTone(context, soundVolume, soundType);
+                performConfiguredVibration(context, Math.max(4, vibStrength), true);
+                pulseFlashlight(context, 4000);
             } else {
-                // Weak mode:
-                // Handle smart audio unmute & minimum volume
-                prepareWeakAudioState(context);
-
-                // Weak mode vibration: 3 seconds
-                performVibration(context, 3000, false);
+                // Weak / Standard Mode:
+                prepareWeakAudioState(context, soundVolume);
+                playNotificationTone(context, soundVolume, soundType);
+                performConfiguredVibration(context, vibStrength, false);
             }
         }
 
         // Automatically reschedule next alarms to keep cycle going forever
         AlarmScheduler.rescheduleAll(context);
-
-        // Keep wakeLock held for duration of vibration/alarm - timeout of 15s will auto-release
     }
 
-    public static void prepareWeakAudioState(Context context) {
+    public static void prepareWeakAudioState(Context context, int targetVolumePercent) {
         try {
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             if (am == null) return;
@@ -183,46 +163,38 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                         .putInt("prev_volume", notifVol)
                         .apply();
 
-                // If muted/vibrate, switch to NORMAL mode without changing volume
                 if (wasMuted) {
-                    try {
-                        am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
-                    } catch (Exception ignored) {}
+                    am.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                 }
 
-                // If volume was 0 (slider at minimum), make it at least 1 (audible)
-                if (wasZero) {
-                    try {
-                        am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 1, 0);
-                    } catch (Exception ignored) {}
-                }
+                int max = am.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                int target = Math.max(1, (int) Math.round((targetVolumePercent / 100.0) * max));
+                am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, target, 0);
             }
         } catch (Exception ignored) {}
     }
 
     public static void restoreAudioState(Context context) {
         try {
-            SharedPreferences audioPrefs = context.getSharedPreferences(PREFS_AUDIO, Context.MODE_PRIVATE);
-            boolean stateActive = audioPrefs.getBoolean("state_active", false);
-            if (!stateActive) return;
-
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            if (am != null) {
-                boolean wasZero = audioPrefs.getBoolean("was_zero_volume", false);
-                int prevVol = audioPrefs.getInt("prev_volume", 0);
-                if (wasZero) {
-                    try {
-                        am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, prevVol, 0);
-                    } catch (Exception ignored) {}
-                }
+            if (am == null) return;
 
-                boolean wasMuted = audioPrefs.getBoolean("was_muted", false);
-                int prevRinger = audioPrefs.getInt("prev_ringer_mode", AudioManager.RINGER_MODE_NORMAL);
-                if (wasMuted) {
-                    try {
-                        am.setRingerMode(prevRinger);
-                    } catch (Exception ignored) {}
-                }
+            SharedPreferences audioPrefs = context.getSharedPreferences(PREFS_AUDIO, Context.MODE_PRIVATE);
+            boolean isActive = audioPrefs.getBoolean("state_active", false);
+            if (!isActive) return;
+
+            boolean wasMuted = audioPrefs.getBoolean("was_muted", false);
+            int prevRingerMode = audioPrefs.getInt("prev_ringer_mode", AudioManager.RINGER_MODE_NORMAL);
+            boolean wasZero = audioPrefs.getBoolean("was_zero_volume", false);
+            int prevVol = audioPrefs.getInt("prev_volume", 0);
+
+            if (wasMuted) {
+                am.setRingerMode(prevRingerMode);
+            }
+            if (wasZero) {
+                am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0);
+            } else if (prevVol > 0) {
+                am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, prevVol, 0);
             }
 
             audioPrefs.edit().clear().apply();
@@ -233,17 +205,17 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
 
-        String channelId = isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT;
+        String channelId = isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_REMINDER;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
                     channelId,
-                    isAlarm ? "Пиксель Рояль: Тревога" : "Пиксель Рояль: Напоминания",
+                    isAlarm ? "Пиксель Рояль: Важные события" : "Пиксель Рояль: Напоминания",
                     NotificationManager.IMPORTANCE_HIGH
             );
             ch.setDescription("Уведомления и вибро-напоминания");
             ch.enableVibration(true);
-            ch.setVibrationPattern(new long[]{0, 600, 250, 600, 250, 800});
+            ch.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 600});
             ch.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
             ch.setBypassDnd(true);
             nm.createNotificationChannel(ch);
@@ -259,7 +231,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         );
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setSmallIcon(R.drawable.ic_kite_cut)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
@@ -267,13 +239,13 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(pi)
                 .setFullScreenIntent(pi, true)
-                .setVibrate(new long[]{0, 600, 250, 600, 250, 800})
+                .setVibrate(new long[]{0, 500, 200, 500, 200, 600})
                 .setAutoCancel(true);
 
         nm.notify((int) (System.currentTimeMillis() % 100000), builder.build());
     }
 
-    private void performVibration(Context context, long durationMs, boolean isAlarm) {
+    public static void performConfiguredVibration(Context context, int strength, boolean isLong) {
         try {
             Vibrator v = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -283,112 +255,166 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             if (v == null) {
                 v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
             }
+            if (v == null || !v.hasVibrator()) return;
 
-            if (v != null && v.hasVibrator()) {
-                long[] pattern = isAlarm ? 
-                        new long[]{0, 800, 200, 800, 200, 800, 200, 800} : 
-                        new long[]{0, 600, 200, 600, 200, 600};
+            int amp;
+            long pulseTime;
+            long pauseTime;
+            int count;
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect effect = VibrationEffect.createWaveform(pattern, -1);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        VibrationAttributes va = new VibrationAttributes.Builder()
-                                .setUsage(VibrationAttributes.USAGE_ALARM)
-                                .build();
-                        v.vibrate(effect, va);
-                    } else {
-                        AudioAttributes aa = new AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_ALARM)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                .build();
-                        v.vibrate(effect, aa);
-                    }
+            switch (strength) {
+                case 1:
+                    amp = 70;
+                    pulseTime = 250;
+                    pauseTime = 300;
+                    count = 2;
+                    break;
+                case 2:
+                    amp = 120;
+                    pulseTime = 400;
+                    pauseTime = 200;
+                    count = 3;
+                    break;
+                case 3:
+                    amp = 175;
+                    pulseTime = 600;
+                    pauseTime = 200;
+                    count = 3;
+                    break;
+                case 4:
+                    amp = 220;
+                    pulseTime = 800;
+                    pauseTime = 180;
+                    count = 4;
+                    break;
+                case 5:
+                default:
+                    amp = 255;
+                    pulseTime = 1000;
+                    pauseTime = 150;
+                    count = 4;
+                    break;
+            }
+
+            if (isLong) count += 1;
+
+            long[] timings = new long[count * 2];
+            int[] amplitudes = new int[count * 2];
+            timings[0] = 0;
+            amplitudes[0] = 0;
+
+            for (int i = 0; i < count; i++) {
+                timings[i * 2] = (i == 0) ? 0 : pauseTime;
+                amplitudes[i * 2] = 0;
+                timings[i * 2 + 1] = pulseTime;
+                amplitudes[i * 2 + 1] = amp;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                VibrationEffect effect;
+                if (v.hasAmplitudeControl()) {
+                    effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
                 } else {
-                    v.vibrate(pattern, -1);
+                    effect = VibrationEffect.createWaveform(timings, -1);
                 }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    VibrationAttributes va = new VibrationAttributes.Builder()
+                            .setUsage(VibrationAttributes.USAGE_ALARM)
+                            .build();
+                    v.vibrate(effect, va);
+                } else {
+                    AudioAttributes aa = new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build();
+                    v.vibrate(effect, aa);
+                }
+            } else {
+                v.vibrate(timings, -1);
             }
         } catch (Exception ignored) {}
     }
 
-    private void playLoudAlarm(Context context) {
+    public static void playNotificationTone(Context context, int volumePercent, String soundType) {
         new Thread(() -> {
             try {
                 AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
                 if (am != null) {
-                    am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+                    int maxVol = am.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION);
+                    int targetVol = Math.max(1, (int) Math.round((volumePercent / 100.0) * maxVol));
+                    am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, targetVol, 0);
                 }
 
-                SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
-                String sirenType = prefs.getString("sirenTypeSelect", "nuclear");
-
-                if ("custom".equals(sirenType)) {
+                // If user selected custom sound
+                if ("custom".equals(soundType)) {
                     File customFile = new File(context.getFilesDir(), "custom_alarm_sound");
                     if (customFile.exists() && customFile.length() > 0) {
-                        try {
-                            MediaPlayer mp = new MediaPlayer();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                mp.setAudioAttributes(new AudioAttributes.Builder()
-                                        .setUsage(AudioAttributes.USAGE_ALARM)
-                                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                        .build());
-                            } else {
-                                mp.setAudioStreamType(AudioManager.STREAM_ALARM);
-                            }
-                            mp.setDataSource(customFile.getAbsolutePath());
-                            mp.prepare();
-                            mp.start();
-                            Thread.sleep(5000);
-                            if (mp.isPlaying()) mp.stop();
-                            mp.release();
-                            return;
-                        } catch (Exception ignored) {}
+                        MediaPlayer mp = new MediaPlayer();
+                        mp.setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build());
+                        mp.setDataSource(customFile.getAbsolutePath());
+                        float vol = Math.max(0.05f, volumePercent / 100.0f);
+                        mp.setVolume(vol, vol);
+                        mp.prepare();
+                        mp.start();
+                        Thread.sleep(3500);
+                        if (mp.isPlaying()) mp.stop();
+                        mp.release();
+                        return;
                     }
                 }
 
+                // If system notification sound
+                if ("system".equals(soundType)) {
+                    Uri notifUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    Ringtone r = RingtoneManager.getRingtone(context, notifUri);
+                    if (r != null) {
+                        r.play();
+                        return;
+                    }
+                }
+
+                // Default melodic chime chord
                 int sampleRate = 44100;
-                int bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-                AudioAttributes aa = new AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build();
-                AudioFormat af = new AudioFormat.Builder()
-                        .setSampleRate(sampleRate)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .build();
+                int durationSamples = (int) (sampleRate * 1.5);
+                short[] buffer = new short[durationSamples];
+                float volScale = (volumePercent / 100.0f) * 0.75f;
+
+                double f1 = 523.25; // C5
+                double f2 = 659.25; // E5
+                double f3 = 783.99; // G5
+                double f4 = 1046.50; // C6
+
+                for (int i = 0; i < durationSamples; i++) {
+                    double t = (double) i / sampleRate;
+                    double env = Math.exp(-3.5 * t);
+                    double sample = 0.35 * Math.sin(2 * Math.PI * f1 * t)
+                                  + 0.30 * Math.sin(2 * Math.PI * f2 * t)
+                                  + 0.25 * Math.sin(2 * Math.PI * f3 * t)
+                                  + 0.10 * Math.sin(2 * Math.PI * f4 * t);
+                    buffer[i] = (short) (sample * env * volScale * 32767);
+                }
 
                 AudioTrack track = new AudioTrack.Builder()
-                        .setAudioAttributes(aa)
-                        .setAudioFormat(af)
-                        .setBufferSizeInBytes(bufferSize)
-                        .setTransferMode(AudioTrack.MODE_STREAM)
+                        .setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build())
+                        .setAudioFormat(new AudioFormat.Builder()
+                                .setSampleRate(sampleRate)
+                                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                .build())
+                        .setBufferSizeInBytes(buffer.length * 2)
+                        .setTransferMode(AudioTrack.MODE_STATIC)
                         .build();
 
+                track.write(buffer, 0, buffer.length);
                 track.play();
-                short[] buffer = new short[bufferSize];
-                double phase = 0;
-                long end = System.currentTimeMillis() + 4000L;
-                double time = 0;
-
-                while (System.currentTimeMillis() < end) {
-                    for (int i = 0; i < bufferSize; i++) {
-                        double freq;
-                        if ("fast".equals(sirenType)) {
-                            freq = ((int)(time / 0.3) % 2 == 0) ? 900.0 : 1400.0;
-                        } else if ("police".equals(sirenType)) {
-                            freq = 700.0 + 900.0 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 1.5 * time));
-                        } else {
-                            double cycle = time % 1.2;
-                            freq = (cycle < 0.6) ? 700 + 1100 * (cycle / 0.6) : 1800 - 1100 * ((cycle - 0.6) / 0.6);
-                        }
-                        phase += 2.0 * Math.PI * freq / sampleRate;
-                        if (phase > 2.0 * Math.PI) phase -= 2.0 * Math.PI;
-                        double sample = Math.sin(phase) > 0 ? 0.95 : -0.95;
-                        buffer[i] = (short) (sample * 32767);
-                        time += 1.0 / sampleRate;
-                    }
-                    track.write(buffer, 0, bufferSize);
-                }
+                Thread.sleep(1600);
                 track.stop();
                 track.release();
             } catch (Exception ignored) {}
@@ -411,23 +437,17 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                         break;
                     }
                 }
-                if (camId == null && cm.getCameraIdList().length > 0) {
-                    camId = cm.getCameraIdList()[0];
-                }
+                if (camId == null && cm.getCameraIdList().length > 0) camId = cm.getCameraIdList()[0];
                 if (camId == null) return;
 
                 long end = System.currentTimeMillis() + durationMs;
                 boolean state = false;
                 while (System.currentTimeMillis() < end) {
                     state = !state;
-                    try {
-                        cm.setTorchMode(camId, state);
-                    } catch (Exception ignored) {}
-                    Thread.sleep(500);
+                    try { cm.setTorchMode(camId, state); } catch (Exception ignored) {}
+                    Thread.sleep(400);
                 }
-                try {
-                    cm.setTorchMode(camId, false);
-                } catch (Exception ignored) {}
+                try { cm.setTorchMode(camId, false); } catch (Exception ignored) {}
             } catch (Exception ignored) {}
         }).start();
     }
