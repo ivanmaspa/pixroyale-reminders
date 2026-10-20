@@ -32,6 +32,9 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.FileProvider;
+import android.provider.Settings;
+import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -466,15 +469,9 @@ public class MainActivity extends AppCompatActivity {
     public void startNativeNormalReminder(int durationUntilZeroSec, String eventTitle) {
         stopAllAlarms();
 
-        try {
-            ReminderBroadcastReceiver.prepareWeakAudioState(this);
-            strobeHandler.postDelayed(() -> ReminderBroadcastReceiver.restoreAudioState(this), 
-                    (durationUntilZeroSec > 0 ? durationUntilZeroSec : 15) * 1000L);
-        } catch (Exception ignored) {}
-
         // Show push notification
         String title = (eventTitle != null && !eventTitle.isEmpty()) ? eventTitle : "Пиксель Рояль: Скоро ивент!";
-        showSystemNotification(title, "Осталось времени до :00. Слабый режим активен.", false);
+        showSystemNotification(title, "Осталось времени до :00. Телефон вибрирует каждые 5 сек по 3 сек.", false);
 
         // Run vibration pulses (3s pulse, 5s period) strictly until event begins (:00)
         startNormalVibrationLoop(durationUntilZeroSec > 0 ? durationUntilZeroSec : 15);
@@ -592,6 +589,34 @@ public class MainActivity extends AppCompatActivity {
             webView.goBack();
         } else {
             super.onBackPressed();
+        }
+    }
+
+    public void promptInstallApk(File apkFile) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (!getPackageManager().canRequestPackageInstalls()) {
+                    Intent grantIntent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:" + getPackageName()));
+                    grantIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(grantIntent);
+                    Toast.makeText(this, "Разрешите установку обновлений и вернитесь", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            Uri apkUri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    apkFile
+            );
+
+            Intent installIntent = new Intent(Intent.ACTION_VIEW);
+            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(installIntent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Ошибка установки: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -718,33 +743,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void copyToClipboard(String text) {
-            activity.runOnUiThread(() -> {
-                try {
-                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
-                    android.content.ClipData clip = android.content.ClipData.newPlainText("PixRoyale", text);
-                    if (clipboard != null) {
-                        clipboard.setPrimaryClip(clip);
-                    }
-                } catch (Exception ignored) {}
-            });
-        }
-
-        @JavascriptInterface
         public void downloadAndInstallApk(String downloadUrl) {
             new Thread(() -> {
                 try {
                     activity.runOnUiThread(() -> {
                         if (activity.webView != null) {
-                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(10, 'Подключение к серверу...'); }", null);
+                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(1, 'Подключение к серверу...'); }", null);
                         }
                     });
 
                     java.net.URL url = new java.net.URL(downloadUrl);
                     java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("User-Agent", "PixRoyaleApp");
                     conn.setInstanceFollowRedirects(true);
-                    conn.connect();
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; PixRoyale-x2i01z)");
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
 
                     int responseCode = conn.getResponseCode();
                     if (responseCode == java.net.HttpURLConnection.HTTP_MOVED_PERM || 
@@ -752,80 +765,67 @@ public class MainActivity extends AppCompatActivity {
                         responseCode == 307 || responseCode == 308) {
                         String newUrl = conn.getHeaderField("Location");
                         conn = (java.net.HttpURLConnection) new java.net.URL(newUrl).openConnection();
-                        conn.setRequestProperty("User-Agent", "PixRoyaleApp");
-                        conn.connect();
+                        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; PixRoyale-x2i01z)");
+                        conn.setConnectTimeout(15000);
+                        conn.setReadTimeout(30000);
                     }
 
                     int fileLength = conn.getContentLength();
+                    java.io.InputStream input = new java.io.BufferedInputStream(conn.getInputStream());
+
                     File cacheDir = activity.getExternalCacheDir();
-                    if (cacheDir == null) cacheDir = activity.getCacheDir();
-                    File outputFile = new File(cacheDir, "update.apk");
-                    if (outputFile.exists()) outputFile.delete();
+                    if (cacheDir == null) {
+                        cacheDir = activity.getCacheDir();
+                    }
+                    File apkFile = new File(cacheDir, "update.apk");
+                    if (apkFile.exists()) {
+                        apkFile.delete();
+                    }
 
-                    java.io.InputStream input = conn.getInputStream();
-                    java.io.OutputStream output = new java.io.FileOutputStream(outputFile);
-
+                    java.io.OutputStream output = new java.io.FileOutputStream(apkFile);
                     byte[] data = new byte[8192];
                     long total = 0;
                     int count;
+                    long lastUpdate = 0;
+
                     while ((count = input.read(data)) != -1) {
                         total += count;
-                        if (fileLength > 0) {
+                        output.write(data, 0, count);
+
+                        long now = System.currentTimeMillis();
+                        if (fileLength > 0 && (now - lastUpdate > 250 || total == fileLength)) {
+                            lastUpdate = now;
                             int progress = (int) (total * 100 / fileLength);
+                            String status = String.format(java.util.Locale.US, "Загрузка: %d%% (%.1f / %.1f MB)",
+                                    progress, total / (1024.0 * 1024.0), fileLength / (1024.0 * 1024.0));
                             activity.runOnUiThread(() -> {
                                 if (activity.webView != null) {
-                                    activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(" + progress + ", 'Загрузка: " + progress + "%'); }", null);
+                                    activity.webView.evaluateJavascript(
+                                        String.format(java.util.Locale.US, "if (window.onDownloadProgress) { window.onDownloadProgress(%d, '%s'); }", progress, status),
+                                        null);
                                 }
                             });
                         }
-                        output.write(data, 0, count);
                     }
+
                     output.flush();
                     output.close();
                     input.close();
 
                     activity.runOnUiThread(() -> {
-                        try {
-                            if (activity.webView != null) {
-                                activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(100, 'Запуск установки...'); }", null);
-                            }
-
-                            Intent installIntent = new Intent(Intent.ACTION_VIEW);
-                            installIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                            Uri apkUri;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                apkUri = androidx.core.content.FileProvider.getUriForFile(
-                                        activity,
-                                        activity.getPackageName() + ".fileprovider",
-                                        outputFile
-                                );
-                            } else {
-                                apkUri = Uri.fromFile(outputFile);
-                            }
-
-                            installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
-                            activity.startActivity(installIntent);
-                        } catch (Exception e) {
-                            // Fallback to browser intent if FileProvider or installer fails
-                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-                            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            activity.startActivity(fallback);
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(100, 'Запуск установщика...'); }", null);
                         }
+                        activity.promptInstallApk(apkFile);
                     });
 
-                } catch (Exception err) {
+                } catch (Exception e) {
                     activity.runOnUiThread(() -> {
                         if (activity.webView != null) {
-                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Ошибка: " + err.getMessage() + "'); }", null);
+                            activity.webView.evaluateJavascript(
+                                String.format("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Ошибка: %s'); }", (e.getMessage() != null ? e.getMessage().replace("'", "\'") : "Сбой сети")),
+                                null);
                         }
-                        // Fallback to browser download
-                        try {
-                            Intent fallback = new Intent(Intent.ACTION_VIEW, Uri.parse(downloadUrl));
-                            fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            activity.startActivity(fallback);
-                        } catch (Exception ignored) {}
                     });
                 }
             }).start();
@@ -881,45 +881,64 @@ public class MainActivity extends AppCompatActivity {
         public void openTelegramBot(String usernameOrUrl) {
             activity.runOnUiThread(() -> {
                 try {
-                    String clean = usernameOrUrl.replace("@", "")
-                            .replace("https://t.me/", "")
-                            .replace("http://t.me/", "")
-                            .replace("/", "")
-                            .trim();
+                    String domain = usernameOrUrl;
+                    if (domain.startsWith("@")) {
+                        domain = domain.substring(1);
+                    } else if (domain.contains("t.me/")) {
+                        domain = domain.substring(domain.lastIndexOf("t.me/") + 5);
+                    }
+                    if (domain.contains("?")) {
+                        domain = domain.substring(0, domain.indexOf("?"));
+                    }
+                    domain = domain.replace("/", "").trim();
+                    if (domain.isEmpty()) {
+                        domain = "PBMap_bot";
+                    }
 
-                    // 1. Direct tg:// protocol intent
-                    Intent tgIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + clean));
-                    tgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Uri tgUri = Uri.parse("tg://resolve?domain=" + domain);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, tgUri);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                    // 2. Try known Telegram client packages directly so browser NEVER opens
-                    String[] tgPackages = new String[] {
+                    String[] tgPackages = new String[]{
                             "org.telegram.messenger",
                             "org.telegram.plus",
                             "org.thunderdog.challegram",
-                            "org.telegram.messenger.web"
+                            "org.telegram.messenger.web",
+                            "org.telegram.messenger.beta"
                     };
 
+                    boolean launched = false;
                     for (String pkg : tgPackages) {
                         try {
-                            Intent pkgIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=" + clean));
-                            pkgIntent.setPackage(pkg);
-                            pkgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            activity.startActivity(pkgIntent);
-                            return;
+                            activity.getPackageManager().getPackageInfo(pkg, 0);
+                            intent.setPackage(pkg);
+                            activity.startActivity(intent);
+                            launched = true;
+                            break;
                         } catch (Exception ignored) {}
                     }
 
-                    // 3. Try generic tg:// intent if package name differs
-                    try {
-                        activity.startActivity(tgIntent);
-                        return;
-                    } catch (Exception ignored) {}
+                    if (!launched) {
+                        try {
+                            Intent genericTg = new Intent(Intent.ACTION_VIEW, tgUri);
+                            genericTg.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            activity.startActivity(genericTg);
+                            launched = true;
+                        } catch (Exception ignored) {}
+                    }
 
-                    // 4. Fallback to browser only if user does not have Telegram installed
-                    Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/" + clean));
-                    webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    activity.startActivity(webIntent);
-                } catch (Exception ignored) {}
+                    if (!launched) {
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/" + domain));
+                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(webIntent);
+                    }
+                } catch (Exception e) {
+                    try {
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/PBMap_bot"));
+                        webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(webIntent);
+                    } catch (Exception ignored) {}
+                }
             });
         }
     }
