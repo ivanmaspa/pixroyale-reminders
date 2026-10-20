@@ -61,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler normalVibHandler = new Handler(Looper.getMainLooper());
     private boolean isNormalVibActive = false;
 
-    private static final String CHANNEL_ID_SILENT = "pixel_royale_silent_channel";
-    private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_channel";
+    private static final String CHANNEL_ID_SILENT = "pixel_royale_reminder_v3";
+    private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_v3";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Schedule background alarms immediately on launch
         AlarmScheduler.rescheduleAll(this);
+        requestBatteryOptimizationExemption();
     }
 
     private void initNotificationChannels() {
@@ -111,7 +112,10 @@ public class MainActivity extends AppCompatActivity {
                 );
                 chSilent.setDescription("Вибро-оповещения без звука");
                 chSilent.setSound(null, null);
-                chSilent.enableVibration(false);
+                chSilent.enableVibration(true);
+                chSilent.setVibrationPattern(new long[]{0, 600, 250, 600, 250, 800});
+                chSilent.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+                chSilent.setBypassDnd(true);
                 nm.createNotificationChannel(chSilent);
 
                 // Alarm channel
@@ -376,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
                             VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 VibrationAttributes va = new VibrationAttributes.Builder()
-                                        .setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                                        .setUsage(VibrationAttributes.USAGE_ALARM)
                                         .build();
                                 v.vibrate(effect, va);
                             } else {
@@ -589,6 +593,27 @@ public class MainActivity extends AppCompatActivity {
             webView.goBack();
         } else {
             super.onBackPressed();
+        }
+    }
+
+    private void requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                android.os.PowerManager pm = (android.os.PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                    @SuppressLint("BatteryLife")
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+            } catch (Exception e) {
+                try {
+                    Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                } catch (Exception ignored) {}
+            }
         }
     }
 
@@ -852,7 +877,7 @@ public class MainActivity extends AppCompatActivity {
                             VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 VibrationAttributes va = new VibrationAttributes.Builder()
-                                        .setUsage(VibrationAttributes.USAGE_NOTIFICATION)
+                                        .setUsage(VibrationAttributes.USAGE_ALARM)
                                         .build();
                                 v.vibrate(effect, va);
                             } else {
