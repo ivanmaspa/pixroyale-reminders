@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Pixel Royale Напоминания A2ds07u</title>
+  <title>Пиксель Рояль: Трекер</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -31,50 +31,35 @@
       border-radius: 4px;
     }
     .glow-red {
-      box-shadow: 0 0 25px -4px rgba(239, 68, 68, 0.45);
+      box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.4);
     }
     .glow-cyan {
-      box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.45);
+      box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
     }
     .glow-indigo {
-      box-shadow: 0 0 25px -4px rgba(99, 102, 241, 0.45);
-    }
-    .glow-emerald {
-      box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.45);
-    }
-    .glass-card {
-      background: rgba(17, 24, 39, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .glass-card-active {
-      background: rgba(24, 32, 54, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.4);
     }
   </style>
 </head>
-<body class="bg-gray-950 flex flex-col min-h-screen text-gray-100">
+<body class="bg-gray-950 flex flex-col min-h-screen">
 
-  <!-- Ambient Dynamic Glow Lights -->
-  <div class="fixed top-0 left-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <!-- Floating Ambient Blur Lights -->
+  <div class="fixed top-0 left-0 w-72 h-72 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
   <div class="fixed top-1/2 right-0 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-0 left-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
   <!-- STICKY TOP APP HEADER -->
-  <header class="sticky top-0 z-40 px-4 py-2.5 bg-gray-950/90 backdrop-blur-xl border-b border-gray-800/80 flex items-center justify-between">
+  <header class="sticky top-0 z-30 px-4 py-3 bg-gray-950/90 backdrop-blur-xl border-b border-gray-800/80 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-red-500/25">
         <i data-lucide="swords" class="w-5 h-5 text-white"></i>
       </div>
       <div>
         <div class="flex items-center gap-1.5">
-          <h1 class="font-black text-sm tracking-tight text-white uppercase">Pixel Royale</h1>
-          <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-red-500/20 to-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-mono font-black">A2ds07u</span>
+          <h1 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h1>
+          <span class="px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 text-[10px] font-mono font-bold">x2i01z</span>
         </div>
-        <p class="text-[10px] text-gray-400 font-medium">Капча 19:00 • Аирдропы • Карта</p>
+        <p class="text-[11px] text-gray-400">Капча 19:00 • Аирдропы • Карта</p>
       </div>
     </div>
     <div class="text-right">
@@ -84,53 +69,54 @@
     </div>
   </header>
 
-  <!-- QUICK MAP BOT INTEGRATION (Single Tap Direct Telegram Launch) -->
-  <section class="relative z-30 px-3.5 py-2 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md">
+  <!-- QUICK MAP BOT INTEGRATION (Single Button) -->
+  <section class="relative z-20 px-3.5 py-2 bg-gray-900/60 border-b border-gray-800/70 backdrop-blur-md">
+    <!-- Map Bot Integration Button -->
     <button onclick="openBot('@PBMap_bot')" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-950/90 via-sky-900/80 to-blue-900/70 border border-cyan-500/50 text-left active:scale-[0.98] transition-all glow-cyan">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
           <i data-lucide="map" class="w-4 h-4"></i>
         </div>
-        <div class="truncate">
-          <div class="text-xs font-black text-cyan-100 truncate">КАРТА ИГРЫ (ОТКРЫТЬ В ТЕЛЕГРАМ)</div>
+        <div>
+          <div class="text-xs font-black text-cyan-100">КАРТА ИГРЫ (ОТКРЫТЬ В ТЕЛЕГРАМ)</div>
           <div class="text-[10px] text-cyan-300/80 font-mono">@PBMap_bot</div>
         </div>
       </div>
-      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold text-[11px] shrink-0">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 font-bold text-[11px]">
         <span>Открыть</span>
         <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
       </div>
     </button>
   </section>
 
-  <!-- NAVIGATION TABS (Strictly the 4 original A2ds06u tabs) -->
-  <nav class="sticky top-[53px] z-30 flex bg-gray-950/95 border-b border-gray-800/80 px-2 pt-1.5 gap-1 backdrop-blur-md">
+  <!-- NAVIGATION TABS -->
+  <nav class="sticky top-[57px] z-20 flex bg-gray-950/95 border-b border-gray-800/80 px-2 pt-1.5 gap-1 backdrop-blur-md">
     <button onclick="switchTab('captcha')" id="tab-captcha" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1.5">
-      <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> <span>Капча 19:00</span>
+      <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Капча 19:00
     </button>
     <button onclick="switchTab('airdrop')" id="tab-airdrop" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
-      <i data-lucide="box" class="w-3.5 h-3.5"></i> <span>Аирдропы</span>
+      <i data-lucide="box" class="w-3.5 h-3.5"></i> Аирдропы
     </button>
     <button onclick="switchTab('map')" id="tab-map" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
-      <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> <span>Карта</span>
+      <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Карта
     </button>
     <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-gray-400 border-b-2 border-transparent hover:text-white flex items-center justify-center gap-1.5">
-      <i data-lucide="settings" class="w-3.5 h-3.5"></i> <span>Режимы</span>
+      <i data-lucide="settings" class="w-3.5 h-3.5"></i> Режимы
     </button>
   </nav>
 
   <!-- FULLY SCROLLABLE MAIN CONTENT AREA -->
-  <main class="flex-1 p-3.5 space-y-4 pb-20">
+  <main class="flex-1 p-4 space-y-4 pb-20">
 
     <!-- ========================================== -->
     <!-- TAB 1: КАПЧА В 19:00:00 МСК (3 МИНУТЫ)      -->
     <!-- ========================================== -->
-    <div id="content-captcha" class="space-y-3.5">
+    <div id="content-captcha" class="space-y-4">
       
       <!-- Hero Captcha Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/90 via-gray-900 to-gray-950 border border-red-700/60 shadow-2xl relative overflow-hidden">
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/90 via-gray-900 to-gray-950 border border-red-700/50 shadow-2xl relative overflow-hidden">
         <div class="flex items-center justify-between mb-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/35">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-500/15 text-red-300 border border-red-500/30">
             <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span>
             КАПЧА 19:00 (3 мин)
           </span>
@@ -144,8 +130,8 @@
           Окно сдачи: <b>с 19:00 до 19:03 МСК</b>. Снижает пропуски до абсолютного минимума.
         </p>
 
-        <!-- Exact Time bounds box from A2ds06u -->
-        <div class="mt-3.5 p-3.5 rounded-2xl bg-black/60 border border-gray-800 flex items-center justify-between">
+        <!-- Time bounds box -->
+        <div class="mt-4 p-3.5 rounded-2xl bg-black/50 border border-gray-800/80 flex items-center justify-between">
           <div>
             <div class="text-[11px] text-gray-400">Точный старт:</div>
             <div class="text-sm font-black text-white">19:00:00 МСК</div>
@@ -155,52 +141,10 @@
             <div class="text-sm font-black text-amber-400">19:00 — 19:03 (:03)</div>
           </div>
         </div>
-
-        <!-- Live Visual Progress Bar -->
-        <div class="mt-3 p-3 rounded-2xl bg-black/60 border border-gray-800 space-y-2">
-          <div class="flex justify-between text-[11px] font-bold">
-            <span class="text-gray-400">Статус окна:</span>
-            <span id="captchaStatusText" class="text-amber-400">Ожидание 19:00</span>
-          </div>
-          <div class="w-full h-2 rounded-full bg-gray-800 overflow-hidden">
-            <div id="captchaProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-red-500 transition-all duration-500" style="width: 0%"></div>
-          </div>
-          <div class="flex justify-between text-[10px] text-gray-500 font-mono">
-            <span>19:00:00 (Старт)</span>
-            <span>19:03:00 (Финиш)</span>
-          </div>
-        </div>
-
-        <div class="mt-3.5 grid grid-cols-2 gap-2">
-          <button onclick="testExtraAlarm()" class="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg shadow-red-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="bell-ring" class="w-4 h-4"></i> Тест тревоги
-          </button>
-          <button onclick="testSingleVib()" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/40 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибро (3с)
-          </button>
-        </div>
-
-        <div class="mt-2">
-          <button onclick="openBot('@PBMap_bot')" class="w-full py-2.5 rounded-xl bg-cyan-950 hover:bg-cyan-900/90 text-cyan-300 font-bold text-xs border border-cyan-500/40 active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="map" class="w-4 h-4"></i> Открыть карту @PBMap_bot
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Tips Card -->
-      <div class="p-4 rounded-3xl glass-card space-y-2.5">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-          <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Золотое правило капчи
-        </h3>
-        <ul class="text-xs text-gray-300 space-y-1.5 list-disc list-inside leading-relaxed">
-          <li>Заходите в игру <b>ровно в 18:59:30</b>, когда сработает экстра-сигнализация.</li>
-          <li>В 19:00:01 капча появляется в боте — вводите её сразу в первую минуту.</li>
-          <li>После 19:03 окно закрывается, и попытка сгорает до следующего дня.</li>
-        </ul>
       </div>
 
       <!-- Captcha Timing Settings Card -->
-      <div class="p-4 rounded-3xl glass-card space-y-3">
+      <div class="p-4 rounded-3xl bg-gray-900/80 border border-gray-800 space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-red-400"></i> Интервал срабатывания
         </h3>
@@ -238,7 +182,7 @@
     <!-- ========================================== -->
     <!-- TAB 2: АИРДРОПЫ (КАЖДЫЕ 2 ЧАСА + 20:00)    -->
     <!-- ========================================== -->
-    <div id="content-airdrop" class="hidden space-y-3.5">
+    <div id="content-airdrop" class="hidden space-y-4">
       
       <!-- Airdrop Hero Card -->
       <div class="p-5 rounded-3xl bg-gradient-to-br from-indigo-950/90 via-gray-900 to-gray-950 border border-indigo-700/50 shadow-2xl">
@@ -263,7 +207,7 @@
       </div>
 
       <!-- Controls -->
-      <div class="p-4 rounded-3xl glass-card space-y-3">
+      <div class="p-4 rounded-3xl bg-gray-900/80 border border-gray-800 space-y-3">
         <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Настройки Аирдропов</h3>
 
         <div class="flex items-center justify-between py-1">
@@ -303,10 +247,10 @@
     <!-- ========================================== -->
     <!-- TAB 3: КАРТА И ТЕЛЕГРАМ БОТЫ                -->
     <!-- ========================================== -->
-    <div id="content-map" class="hidden space-y-3.5">
+    <div id="content-map" class="hidden space-y-4">
       
       <!-- PBMap Card -->
-      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/80 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3.5">
+      <div class="p-5 rounded-3xl bg-gradient-to-br from-cyan-950/80 via-gray-900 to-gray-950 border border-cyan-500/50 shadow-2xl space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-black">
@@ -317,7 +261,7 @@
               <p class="text-xs text-cyan-300/80 font-mono">@PBMap_bot</p>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 text-[10px] font-bold border border-cyan-500/40">ИНТЕГРИРОВАН</span>
+          <span class="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">ИНТЕГРИРОВАН</span>
         </div>
 
         <p class="text-xs text-gray-300 leading-relaxed">
@@ -327,12 +271,6 @@
         <button onclick="openBot('@PBMap_bot')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-black text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30">
           <i data-lucide="map-pin" class="w-4 h-4"></i> Открыть карту в @PBMap_bot
         </button>
-
-        <div class="flex gap-2 pt-1">
-          <button onclick="copyBotLink('@PBMap_bot')" class="flex-1 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-[11px] font-bold border border-gray-700 active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Скопировать @PBMap_bot
-          </button>
-        </div>
       </div>
 
     </div>
@@ -340,7 +278,7 @@
     <!-- ========================================== -->
     <!-- TAB 4: НАСТРОЙКИ, РЕЖИМЫ И ТЕСТЫ            -->
     <!-- ========================================== -->
-    <div id="content-settings" class="hidden space-y-3.5">
+    <div id="content-settings" class="hidden space-y-4">
       
       <!-- 1. Экстра-Режим Сирены & Фонарика -->
       <div class="p-5 rounded-3xl bg-gradient-to-br from-red-950/90 via-rose-950/70 to-gray-950 border border-red-600/70 shadow-2xl space-y-3">
@@ -401,7 +339,7 @@
       </div>
 
       <!-- 2. Слабый / Простой Режим (Вибрация без звука) -->
-      <div class="p-5 rounded-3xl glass-card space-y-3">
+      <div class="p-5 rounded-3xl bg-gray-900/80 border border-gray-800 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center font-black">
@@ -415,30 +353,26 @@
           <input type="checkbox" id="normalModeEnabled" checked onchange="saveConfig()" class="w-5 h-5 accent-sky-500 rounded">
         </div>
 
-        <div class="p-3 rounded-2xl bg-black/40 border border-gray-800 space-y-2 text-[11px] text-gray-300">
+        <div class="p-3 rounded-2xl bg-black/40 border border-gray-800 space-y-1.5 text-[11px] text-gray-300">
           <div class="flex items-center gap-1.5 text-sky-400 font-semibold">
             <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
             <span>Поведение: 1 раз вибрирует 3 сек по заданному времени</span>
           </div>
-          <p class="text-gray-300 leading-snug"><b>Авто-звук:</b> если звук выключен — включается на время оповещения, а ровно после наступления :00 выключается обратно. Если громкость была на нуле — поднимается до минимальной (1), а после :00 возвращается в 0.</p>
-          <p class="text-gray-400 leading-snug">Работает в фоне и при выключенном экране через системный будильник Android (RTC_WAKEUP).</p>
+          <p class="text-gray-400 leading-snug">Работает в фоне и при выключенном экране через системный будильник Android (RTC_WAKEUP). Присылает пуш и 1 раз вибрирует ровно за указанное время до ивента.</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button onclick="testSingleVib()" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибро (3с)
+        <div class="flex gap-2 pt-1">
+          <button onclick="testSingleVib()" class="flex-1 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-400 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-4 h-4"></i> Тест 1 вибрации (3 сек)
           </button>
-          <button onclick="testNormalReminder(18)" class="py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-sky-300 border border-sky-500/30 font-bold text-xs active:scale-95 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="bell" class="w-4 h-4"></i> Тест цикла вибро
+          <button onclick="stopAnyAlarm()" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 font-bold text-xs border border-gray-700 active:scale-95 transition-all">
+            Стоп
           </button>
         </div>
-        <button onclick="stopAnyAlarm()" class="w-full py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 text-xs font-semibold border border-gray-800 active:scale-95 transition-all">
-          Остановить тест
-        </button>
       </div>
 
       <!-- 3. Настройки "Не будить ночью" -->
-      <div class="p-5 rounded-3xl glass-card space-y-3">
+      <div class="p-5 rounded-3xl bg-gray-900/80 border border-gray-800 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black">
@@ -483,7 +417,7 @@
       </div>
 
       <!-- 4. Настраиваемый режим "СВОЙ" (Фонарик, Уведомление, Вибрация, Звук) -->
-      <div class="p-5 rounded-3xl glass-card border border-emerald-500/40 shadow-xl space-y-3.5 relative overflow-hidden">
+      <div class="p-5 rounded-3xl bg-gray-900/90 border border-emerald-500/40 shadow-xl space-y-3.5 relative overflow-hidden">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
@@ -553,7 +487,7 @@
       </div>
 
       <!-- 5. АВТО-ОБНОВЛЕНИЕ (1 Клик без ручного скачивания) -->
-      <div class="p-5 rounded-3xl glass-card space-y-3">
+      <div class="p-5 rounded-3xl bg-gray-900/80 border border-gray-800 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black">
@@ -561,7 +495,7 @@
             </div>
             <div>
               <h4 class="text-sm font-bold text-white">Авто-обновление приложения</h4>
-              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">A2ds07u</span></p>
+              <p class="text-[11px] text-gray-400">Текущая версия: <span class="text-purple-400 font-mono font-bold">x2i01z</span></p>
             </div>
           </div>
         </div>
@@ -591,7 +525,7 @@
       <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span class="font-medium text-gray-300">Фоновый мониторинг активен</span>
     </div>
-    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale A2ds07u</span>
+    <span class="text-[11px] text-gray-400 font-mono">Pixel Royale x2i01z</span>
   </footer>
 
   <script>
@@ -603,7 +537,6 @@
       ['captcha', 'airdrop', 'map', 'settings'].forEach(id => {
         const btn = document.getElementById('tab-' + id);
         const content = document.getElementById('content-' + id);
-        if (!btn || !content) return;
         if (id === tabId) {
           btn.className = "flex-1 py-2 text-xs font-bold rounded-t-xl transition-all text-red-400 border-b-2 border-red-500 bg-gray-900/60 flex items-center justify-center gap-1.5";
           content.classList.remove('hidden');
@@ -625,18 +558,8 @@
       }
     }
 
-    function copyBotLink(text) {
-      if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
-        window.AndroidBridge.copyToClipboard(text);
-        alert("Имя бота скопировано: " + text);
-      } else {
-        navigator.clipboard.writeText(text).then(() => alert("Скопировано: " + text));
-      }
-    }
-
     function renderAirdropGrid() {
       const grid = document.getElementById('airdropGrid');
-      if (!grid) return;
       grid.innerHTML = '';
       const now = new Date();
       const msk = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Moscow" }));
@@ -708,24 +631,11 @@
       captchaTarget.setHours(19, 0, 0, 0);
 
       const isCaptchaActive = (curH === 19 && curM < 3);
-      const progressBar = document.getElementById('captchaProgressBar');
-      const statusText = document.getElementById('captchaStatusText');
-
       if (isCaptchaActive) {
-        const passedSec = curM * 60 + curS;
-        const totalWindowSec = 180;
-        const leftS = 180 - passedSec;
-        const pct = Math.min(100, Math.floor((passedSec / totalWindowSec) * 100));
-
-        if (progressBar) progressBar.style.width = pct + "%";
-        if (statusText) statusText.textContent = `ОКНО ОТКРЫТО! Осталось ${leftS}с`;
-
+        const leftS = (3 * 60) - (curM * 60 + curS);
         document.getElementById('captchaRemainingBadge').textContent = `ИДЕТ СЕЙЧАС! Осталось ${leftS}с`;
         document.getElementById('captchaRemainingBadge').className = "text-xs font-mono font-bold text-red-300 bg-red-950 px-2.5 py-1 rounded-xl border border-red-500 animate-pulse";
       } else {
-        if (progressBar) progressBar.style.width = "0%";
-        if (statusText) statusText.textContent = "Ожидание 19:00 МСК";
-
         if (msk >= captchaTarget && (curH > 19 || (curH === 19 && curM >= 3))) {
           captchaTarget.setDate(captchaTarget.getDate() + 1);
         }
@@ -847,8 +757,8 @@
     function checkForUpdates() {
       const btn = document.getElementById('btnCheckUpdate');
       const statusText = document.getElementById('updateStatusText');
-      if (btn) btn.disabled = true;
-      if (statusText) statusText.textContent = "Проверка обновлений на GitHub...";
+      btn.disabled = true;
+      statusText.textContent = "Проверка обновлений на GitHub...";
 
       if (window.AndroidBridge && window.AndroidBridge.checkForUpdates) {
         window.AndroidBridge.checkForUpdates();
@@ -875,50 +785,64 @@
       const statusText = document.getElementById('updateStatusText');
       const badge = document.getElementById('updateBadge');
 
-      if (btn) btn.disabled = false;
+      btn.disabled = false;
 
       if (!tag) {
-        if (statusText) statusText.textContent = name || "Не удалось проверить";
-        if (badge) badge.classList.add('hidden');
-        if (btnInstall) btnInstall.classList.add('hidden');
+        statusText.textContent = name || "Не удалось проверить";
+        badge.classList.add('hidden');
+        btnInstall.classList.add('hidden');
         return;
       }
 
-      const currentVer = "A2ds07u";
+      const currentVer = "x2i01z";
       if (tag === currentVer) {
-        if (statusText) statusText.innerHTML = `У вас установлена самая свежая версия (<b>${currentVer}</b>)`;
-        if (badge) badge.classList.add('hidden');
-        if (btnInstall) btnInstall.classList.add('hidden');
+        statusText.innerHTML = `У вас установлена самая свежая версия (<b>${currentVer}</b>)`;
+        badge.classList.add('hidden');
+        btnInstall.classList.add('hidden');
       } else {
         latestAvailableUrl = url;
-        if (statusText) statusText.innerHTML = `Найдена новая версия: <b class="text-emerald-400 font-mono">${tag}</b>`;
-        if (badge) badge.classList.remove('hidden');
-        if (btnInstall) btnInstall.classList.remove('hidden');
+        statusText.innerHTML = `Найдена новая версия: <b class="text-emerald-400 font-mono">${tag}</b>`;
+        badge.classList.remove('hidden');
+        btnInstall.classList.remove('hidden');
       }
     };
 
     function installDownloadedUpdate() {
-      if (!latestAvailableUrl) return;
-      const btnInstall = document.getElementById('btnInstallUpdate');
-      const statusText = document.getElementById('updateStatusText');
-      if (btnInstall) btnInstall.disabled = true;
-      if (statusText) statusText.textContent = "Скачивание обновления...";
-
-      if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
-        window.AndroidBridge.downloadAndInstallApk(latestAvailableUrl);
-      } else if (window.AndroidBridge && window.AndroidBridge.openDownloadUrl) {
-        window.AndroidBridge.openDownloadUrl(latestAvailableUrl);
-      } else {
-        window.open(latestAvailableUrl, '_blank');
+      if (latestAvailableUrl) {
+        if (window.AndroidBridge && window.AndroidBridge.downloadAndInstallApk) {
+          const btn = document.getElementById('btnInstallUpdate');
+          if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="inline-block animate-spin mr-1">⚡</span> Скачивание...`;
+          }
+          const statusText = document.getElementById('updateStatusText');
+          if (statusText) statusText.textContent = "Начало загрузки обновления...";
+          window.AndroidBridge.downloadAndInstallApk(latestAvailableUrl);
+        } else if (window.AndroidBridge && window.AndroidBridge.openDownloadUrl) {
+          window.AndroidBridge.openDownloadUrl(latestAvailableUrl);
+        } else {
+          window.open(latestAvailableUrl, '_blank');
+        }
       }
     }
 
     window.onDownloadProgress = function(pct, text) {
       const statusText = document.getElementById('updateStatusText');
-      const btnInstall = document.getElementById('btnInstallUpdate');
-      if (statusText) statusText.textContent = text || ("Загрузка: " + pct + "%");
-      if (pct < 0) {
-        if (btnInstall) btnInstall.disabled = false;
+      const btn = document.getElementById('btnInstallUpdate');
+      if (statusText) {
+        statusText.innerHTML = `<span class="text-emerald-400 font-mono font-bold">${text}</span>`;
+      }
+      if (btn) {
+        if (pct < 0) {
+          btn.disabled = false;
+          btn.textContent = "Повторить загрузку";
+        } else if (pct >= 100) {
+          btn.disabled = true;
+          btn.textContent = "Запуск установки...";
+        } else {
+          btn.disabled = true;
+          btn.textContent = `Загрузка ${pct}%`;
+        }
       }
     };
 
@@ -990,17 +914,17 @@
     function loadConfig() {
       const keys = ['captchaLeadTime', 'captchaRepeats', 'airdropLeadTime', 'airdropRepeats', 'sirenTypeSelect', 'nightStartHour', 'nightEndHour'];
       keys.forEach(k => {
-        if (localStorage.getItem(k) && document.getElementById(k)) document.getElementById(k).value = localStorage.getItem(k);
+        if (localStorage.getItem(k)) document.getElementById(k).value = localStorage.getItem(k);
       });
       const checks = ['extraModeEnabled', 'normalModeEnabled', 'nightModeEnabled', 'nightSilentMode', 'customModeEnabled', 'customFlash', 'customNotif', 'customVib', 'customSound'];
       checks.forEach(c => {
-        if (localStorage.getItem(c) !== null && document.getElementById(c)) document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
+        if (localStorage.getItem(c) !== null) document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
       });
 
       // Check if custom sound name exists in bridge
       if (window.AndroidBridge && window.AndroidBridge.getCustomSoundName) {
         const customName = window.AndroidBridge.getCustomSoundName();
-        if (customName && customName.length > 0 && document.getElementById('customSoundLabel')) {
+        if (customName && customName.length > 0) {
           document.getElementById('customSoundLabel').textContent = "Свой звук: " + customName;
         }
       }
