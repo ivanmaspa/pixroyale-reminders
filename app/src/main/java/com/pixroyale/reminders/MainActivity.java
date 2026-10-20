@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
@@ -21,47 +22,37 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.FileProvider;
-import android.provider.Settings;
-import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_PICK_AUDIO = 202;
-    private static final String CUSTOM_SOUND_FILENAME = "custom_alarm_sound";
-
     private WebView webView;
-    private Ringtone currentRingtone;
-    private MediaPlayer customMediaPlayer;
+
+    // Flashlight torch control
     private CameraManager cameraManager;
-    private String cameraId;
-    private Handler strobeHandler = new Handler(Looper.getMainLooper());
-    private boolean isStrobeRunning = false;
-    private boolean flashState = false;
+    private String cameraIdWithFlash;
+    private boolean isTorchOn = false;
+    private Handler torchHandler = new Handler(Looper.getMainLooper());
 
-    // Siren tone generator thread
-    private Thread sirenThread;
-    private volatile boolean isSirenRunning = false;
-
-    // Weak / Normal mode vibration loop handler
-    private Handler normalVibHandler = new Handler(Looper.getMainLooper());
-    private boolean isNormalVibActive = false;
-
-    private static final String CHANNEL_ID_SILENT = "pixel_royale_reminder_v3";
+    private static final String CHANNEL_ID_REMINDER = "pixel_royale_reminder_v3";
     private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_v3";
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -93,227 +84,109 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new NativeBridge(this), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
-        webView.loadUrl("file:///android_asset/index.html");
+
+        // Load seamless local bundle if exists, else load android_asset
+        loadAppBundle();
 
         // Schedule background alarms immediately on launch
         AlarmScheduler.rescheduleAll(this);
         requestBatteryOptimizationExemption();
     }
 
+    public void loadAppBundle() {
+        File hotBundle = new File(getFilesDir(), "web_bundle/index.html");
+        if (hotBundle.exists() && hotBundle.length() > 1000) {
+            webView.loadUrl(hotBundle.toURI().toString());
+        } else {
+            webView.loadUrl("file:///android_asset/index.html");
+        }
+    }
+
     private void initNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) {
-                // Silent channel (no sound) for weak/normal mode vibration reminders
-                NotificationChannel chSilent = new NotificationChannel(
-                        CHANNEL_ID_SILENT,
-                        "Пиксель Рояль - Уведомления",
+                // Reminder channel with vibration
+                NotificationChannel chReminder = new NotificationChannel(
+                        CHANNEL_ID_REMINDER,
+                        "Пиксель Рояль - Напоминания",
                         NotificationManager.IMPORTANCE_HIGH
                 );
-                chSilent.setDescription("Вибро-оповещения без звука");
-                chSilent.setSound(null, null);
-                chSilent.enableVibration(true);
-                chSilent.setVibrationPattern(new long[]{0, 600, 250, 600, 250, 800});
-                chSilent.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
-                chSilent.setBypassDnd(true);
-                nm.createNotificationChannel(chSilent);
+                chReminder.setDescription("Вибро-напоминания и уведомления");
+                chReminder.enableVibration(true);
+                chReminder.setVibrationPattern(new long[]{0, 500, 200, 500, 200, 600});
+                chReminder.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+                chReminder.setBypassDnd(true);
+                nm.createNotificationChannel(chReminder);
 
-                // Alarm channel
+                // Priority Alarm channel
                 NotificationChannel chAlarm = new NotificationChannel(
                         CHANNEL_ID_ALARM,
-                        "Пиксель Рояль - Экстра Тревога",
+                        "Пиксель Рояль - Важные события",
                         NotificationManager.IMPORTANCE_HIGH
                 );
-                chAlarm.setDescription("Громкая сигнализация");
+                chAlarm.setDescription("Оповещения перед капчей и аирдропами");
+                chAlarm.enableVibration(true);
+                chAlarm.setVibrationPattern(new long[]{0, 800, 200, 800, 200, 800});
+                chAlarm.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+                chAlarm.setBypassDnd(true);
                 nm.createNotificationChannel(chAlarm);
             }
         }
     }
 
-    private void showSystemNotification(String title, String text, boolean isAlarm) {
-        try {
-            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm == null) return;
-
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pi = PendingIntent.getActivity(
-                    this,
-                    0,
-                    intent,
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0
-            );
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                    this,
-                    isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT
-            )
-                    .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                    .setContentTitle(title)
-                    .setContentText(text)
-                    .setPriority(NotificationCompat.PRIORITY_MAX)
-                    .setContentIntent(pi)
-                    .setAutoCancel(true);
-
-            nm.notify(1001, builder.build());
-        } catch (Exception ignored) {}
-    }
-
     private void initCameraTorch() {
-        try {
-            cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-            if (cameraManager != null) {
-                for (String id : cameraManager.getCameraIdList()) {
-                    CameraCharacteristics c = cameraManager.getCameraCharacteristics(id);
-                    Boolean hasFlash = c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-                    Integer facing = c.get(CameraCharacteristics.LENS_FACING);
-                    if (hasFlash != null && hasFlash && facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
-                        cameraId = id;
-                        break;
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-    }
-
-    // Force maximum volume across all streams
-    private void setMaxVolumes() {
-        try {
-            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            if (am != null) {
-                am.setStreamVolume(AudioManager.STREAM_ALARM, am.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
-                am.setStreamVolume(AudioManager.STREAM_NOTIFICATION, am.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION), 0);
-                am.setStreamVolume(AudioManager.STREAM_RING, am.getStreamMaxVolume(AudioManager.STREAM_RING), 0);
-                am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
-            }
-        } catch (Exception ignored) {}
-    }
-
-    // High-pitched loud piercing siren synthesizer or Custom File playback on STREAM_ALARM (loudspeaker)
-    private void startLoudSirenAudio(String sirenType) {
-        stopLoudSirenAudio();
-
-        if ("custom".equals(sirenType)) {
-            File customFile = new File(getFilesDir(), CUSTOM_SOUND_FILENAME);
-            if (customFile.exists() && customFile.length() > 0) {
-                try {
-                    customMediaPlayer = new MediaPlayer();
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        customMediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_ALARM)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .build());
-                    } else {
-                        customMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-                    }
-                    customMediaPlayer.setDataSource(customFile.getAbsolutePath());
-                    customMediaPlayer.setLooping(true);
-                    customMediaPlayer.prepare();
-                    customMediaPlayer.start();
-                    return;
-                } catch (Exception ignored) {
-                    // Fallback to nuclear synthesizer if custom audio fails
-                }
-            }
-        }
-
-        isSirenRunning = true;
-
-        sirenThread = new Thread(() -> {
-            int sampleRate = 44100;
-            int bufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-            if (bufferSize < 4096) bufferSize = 4096;
-
-            AudioAttributes aa = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build();
-
-            AudioFormat af = new AudioFormat.Builder()
-                    .setSampleRate(sampleRate)
-                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .build();
-
-            AudioTrack track;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                track = new AudioTrack.Builder()
-                        .setAudioAttributes(aa)
-                        .setAudioFormat(af)
-                        .setBufferSizeInBytes(bufferSize)
-                        .setTransferMode(AudioTrack.MODE_STREAM)
-                        .build();
-            } else {
-                track = new AudioTrack(AudioManager.STREAM_ALARM, sampleRate, AudioFormat.CHANNEL_OUT_MONO,
-                        AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
-            }
-
-            track.play();
-
-            short[] buffer = new short[bufferSize];
-            double phase = 0;
-            double time = 0;
-
-            while (isSirenRunning) {
-                for (int i = 0; i < bufferSize; i++) {
-                    double freq;
-                    if ("fast".equals(sirenType)) {
-                        // Fast 911 siren: alternating 900Hz and 1400Hz every 0.3s
-                        freq = ((int)(time / 0.3) % 2 == 0) ? 900.0 : 1400.0;
-                    } else if ("police".equals(sirenType)) {
-                        // Continuous wail 700Hz to 1600Hz
-                        freq = 700.0 + 900.0 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 1.5 * time));
-                    } else {
-                        // Nuclear alarm (default): piercing 650Hz to 1800Hz sawtooth/triangle rise & fall
-                        double cycle = time % 1.2;
-                        if (cycle < 0.6) {
-                            freq = 650.0 + (1800.0 - 650.0) * (cycle / 0.6);
-                        } else {
-                            freq = 1800.0 - (1800.0 - 650.0) * ((cycle - 0.6) / 0.6);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+                if (cameraManager != null) {
+                    for (String id : cameraManager.getCameraIdList()) {
+                        CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
+                        Boolean hasFlash = chars.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                        Integer facing = chars.get(CameraCharacteristics.LENS_FACING);
+                        if (hasFlash != null && hasFlash && facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                            cameraIdWithFlash = id;
+                            break;
                         }
                     }
-
-                    phase += 2.0 * Math.PI * freq / sampleRate;
-                    if (phase > 2.0 * Math.PI) phase -= 2.0 * Math.PI;
-
-                    // High intensity square-sine wave
-                    double sample = Math.sin(phase) > 0 ? 0.95 : -0.95;
-                    buffer[i] = (short) (sample * 32767);
-                    time += 1.0 / sampleRate;
+                    if (cameraIdWithFlash == null && cameraManager.getCameraIdList().length > 0) {
+                        cameraIdWithFlash = cameraManager.getCameraIdList()[0];
+                    }
                 }
-                track.write(buffer, 0, bufferSize);
-            }
-
-            try {
-                track.stop();
-                track.release();
             } catch (Exception ignored) {}
-        });
-
-        sirenThread.start();
-    }
-
-    private void stopLoudSirenAudio() {
-        if (customMediaPlayer != null) {
-            try {
-                if (customMediaPlayer.isPlaying()) {
-                    customMediaPlayer.stop();
-                }
-                customMediaPlayer.release();
-            } catch (Exception ignored) {}
-            customMediaPlayer = null;
-        }
-
-        isSirenRunning = false;
-        if (sirenThread != null) {
-            try {
-                sirenThread.join(250);
-            } catch (Exception ignored) {}
-            sirenThread = null;
         }
     }
 
-    private Vibrator getVibrator() {
+    public void setTorch(boolean enable) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && cameraManager != null && cameraIdWithFlash != null) {
+            try {
+                cameraManager.setTorchMode(cameraIdWithFlash, enable);
+                isTorchOn = enable;
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public void stopTorchStrobe() {
+        torchHandler.removeCallbacksAndMessages(null);
+        setTorch(false);
+    }
+
+    private void requestBatteryOptimizationExemption() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
+                    @SuppressLint("BatteryLife")
+                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+                    intent.setData(Uri.parse("package:" + getPackageName()));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public Vibrator getVibrator() {
         Vibrator vibrator = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
@@ -325,294 +198,50 @@ public class MainActivity extends AppCompatActivity {
         return vibrator;
     }
 
-    // Extra Mode continuous vibration
-    private void triggerExtraVibration() {
-        try {
-            Vibrator vibrator = getVibrator();
-            if (vibrator != null && vibrator.hasVibrator()) {
-                long[] timings = new long[]{0, 400, 100, 400, 100, 400, 100};
-                int[] amplitudes = new int[]{0, 255, 0, 255, 0, 255, 0};
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect effect;
-                    if (vibrator.hasAmplitudeControl()) {
-                        effect = VibrationEffect.createWaveform(timings, amplitudes, 0);
-                    } else {
-                        effect = VibrationEffect.createWaveform(timings, 0);
-                    }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        VibrationAttributes va = new VibrationAttributes.Builder()
-                                .setUsage(VibrationAttributes.USAGE_ALARM)
-                                .build();
-                        vibrator.vibrate(effect, va);
-                    } else {
-                        vibrator.vibrate(effect);
-                    }
-                } else {
-                    vibrator.vibrate(timings, 0);
-                }
-            }
-        } catch (Exception ignored) {}
-    }
-
-    // Weak / Normal Mode repetitive vibration:
-    // "вибрация протяженностью 3 секунды с интервалом 5 секунд прямо до :00 без звука с уведомлением"
-    private void startNormalVibrationLoop(int totalSeconds) {
-        stopNormalVibrationLoop();
-        isNormalVibActive = true;
-
-        final long endTimeMs = System.currentTimeMillis() + (totalSeconds * 1000L);
-
-        Runnable vibPulseRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!isNormalVibActive || System.currentTimeMillis() >= endTimeMs) {
-                    stopNormalVibrationLoop();
-                    return;
-                }
-
-                // Vibrate for 3000ms (3 seconds)
-                try {
-                    Vibrator v = getVibrator();
-                    if (v != null && v.hasVibrator()) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                VibrationAttributes va = new VibrationAttributes.Builder()
-                                        .setUsage(VibrationAttributes.USAGE_ALARM)
-                                        .build();
-                                v.vibrate(effect, va);
-                            } else {
-                                v.vibrate(effect);
-                            }
-                        } else {
-                            v.vibrate(3000);
-                        }
-                    }
-                } catch (Exception ignored) {}
-
-                // Next pulse in 5 seconds (5000ms)
-                if (isNormalVibActive && System.currentTimeMillis() + 5000L < endTimeMs) {
-                    normalVibHandler.postDelayed(this, 5000);
-                } else {
-                    // Final delay to clean up at end
-                    long remain = Math.max(0, endTimeMs - System.currentTimeMillis());
-                    normalVibHandler.postDelayed(() -> stopNormalVibrationLoop(), remain);
-                }
-            }
-        };
-
-        normalVibHandler.post(vibPulseRunnable);
-    }
-
-    private void stopNormalVibrationLoop() {
-        isNormalVibActive = false;
-        normalVibHandler.removeCallbacksAndMessages(null);
-        stopVibration();
-    }
-
-    private void stopVibration() {
-        try {
-            Vibrator vibrator = getVibrator();
-            if (vibrator != null) {
-                vibrator.cancel();
-            }
-        } catch (Exception ignored) {}
-    }
-
-    // Flashlight Strobe (1 blink per second: 500ms ON / 500ms OFF)
-    private void startFlashStrobe(int durationSec) {
-        if (cameraManager == null) initCameraTorch();
-        if (cameraManager == null || cameraId == null) return;
-
-        isStrobeRunning = true;
-        flashState = false;
-
-        Runnable strobeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!isStrobeRunning) return;
-                try {
-                    flashState = !flashState;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        cameraManager.setTorchMode(cameraId, flashState);
-                    }
-                } catch (Exception ignored) {}
-                strobeHandler.postDelayed(this, 500);
-            }
-        };
-        strobeHandler.post(strobeRunnable);
-    }
-
-    private void stopFlashStrobe() {
-        isStrobeRunning = false;
-        strobeHandler.removeCallbacksAndMessages(null);
-        if (cameraManager != null && cameraId != null) {
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    cameraManager.setTorchMode(cameraId, false);
-                }
-            } catch (Exception ignored) {}
-        }
-    }
-
-    // 1. EXTRA MODE: Max Volume, Piercing Siren, Flashlight Strobe, Heavy Vibration
-    public void startNativeExtraAlarm(int durationSec, String sirenType) {
-        stopAllAlarms();
-        setMaxVolumes();
-        showSystemNotification("🚨 Пиксель Рояль: ЭКСТРА ТРЕВОГА!", "До ивента осталась 1 минута! Скорее заходи в игру!", true);
-        startLoudSirenAudio(sirenType);
-        triggerExtraVibration();
-        startFlashStrobe(durationSec);
-
-        strobeHandler.postDelayed(this::stopAllAlarms, durationSec * 1000L);
-    }
-
-    // 2. WEAK / NORMAL MODE: Silent with system notification, periodic 3s vibration every 5s until :00
-    public void startNativeNormalReminder(int durationUntilZeroSec, String eventTitle) {
-        stopAllAlarms();
-
-        // Show push notification
-        String title = (eventTitle != null && !eventTitle.isEmpty()) ? eventTitle : "Пиксель Рояль: Скоро ивент!";
-        showSystemNotification(title, "Осталось времени до :00. Телефон вибрирует каждые 5 сек по 3 сек.", false);
-
-        // Run vibration pulses (3s pulse, 5s period) strictly until event begins (:00)
-        startNormalVibrationLoop(durationUntilZeroSec > 0 ? durationUntilZeroSec : 15);
-    }
-
-    // 3. CUSTOM MODE: User picks combinations of Notification, Vibration, Flashlight, and Sound
-    public void startNativeCustomReminder(int durationSec, boolean useSound, boolean useVib, boolean useFlash, boolean useNotif, String sirenType) {
-        stopAllAlarms();
-
-        if (useNotif) {
-            showSystemNotification("Пиксель Рояль: Свой режим", "Сработал настраиваемый режим напоминания!", useSound);
-        }
-
-        if (useSound) {
-            setMaxVolumes();
-            startLoudSirenAudio(sirenType);
-        }
-
-        if (useVib) {
-            if (useSound) {
-                triggerExtraVibration();
-            } else {
-                startNormalVibrationLoop(durationSec > 0 ? durationSec : 15);
-            }
-        }
-
-        if (useFlash) {
-            startFlashStrobe(durationSec > 0 ? durationSec : 10);
-        }
-
-        if (durationSec > 0) {
-            strobeHandler.postDelayed(this::stopAllAlarms, durationSec * 1000L);
-        }
-    }
-
-    public void stopAllAlarms() {
-        stopLoudSirenAudio();
-        stopNormalVibrationLoop();
-        stopVibration();
-        stopFlashStrobe();
-        if (currentRingtone != null && currentRingtone.isPlaying()) {
-            try { currentRingtone.stop(); } catch (Exception ignored) {}
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        stopAllAlarms();
-        super.onDestroy();
-    }
-
     public void startAudioFilePicker() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("audio/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
         try {
-            startActivityForResult(Intent.createChooser(intent, "Выберите звук тревоги"), REQUEST_PICK_AUDIO);
-        } catch (Exception ignored) {}
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("audio/*");
+            startActivityForResult(intent, 202);
+        } catch (Exception e) {
+            Toast.makeText(this, "Не удалось открыть выбор файла: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_PICK_AUDIO && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == 202 && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri audioUri = data.getData();
-            String displayName = getFileNameFromUri(audioUri);
-            boolean success = copyAudioToInternalStorage(audioUri);
-            if (success && webView != null) {
-                // Save custom sound name in SharedPreferences
-                getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE)
-                        .edit()
-                        .putString("customSoundName", displayName)
-                        .apply();
-
-                // Notify web UI
-                webView.post(() -> webView.evaluateJavascript("if(window.onCustomSoundPicked) { onCustomSoundPicked(" + 
-                        android.database.DatabaseUtils.sqlEscapeString(displayName) + "); }", null));
-            }
-        }
-    }
-
-    private String getFileNameFromUri(Uri uri) {
-        String name = "Мой_звук.mp3";
-        try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                int nameIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                if (nameIdx >= 0) {
-                    name = cursor.getString(nameIdx);
-                }
-            }
-        } catch (Exception ignored) {}
-        return name;
-    }
-
-    private boolean copyAudioToInternalStorage(Uri uri) {
-        File dest = new File(getFilesDir(), CUSTOM_SOUND_FILENAME);
-        try (InputStream in = getContentResolver().openInputStream(uri);
-             FileOutputStream out = new FileOutputStream(dest)) {
-            if (in == null) return false;
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.flush();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    private void requestBatteryOptimizationExemption() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
-                android.os.PowerManager pm = (android.os.PowerManager) getSystemService(Context.POWER_SERVICE);
-                if (pm != null && !pm.isIgnoringBatteryOptimizations(getPackageName())) {
-                    @SuppressLint("BatteryLife")
-                    Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + getPackageName()));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+                String displayName = "custom_sound";
+                try (android.database.Cursor cursor = getContentResolver().query(audioUri, null, null, null, null)) {
+                    if (cursor != null && cursor.moveToFirst()) {
+                        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                        if (nameIndex >= 0) displayName = cursor.getString(nameIndex);
+                    }
                 }
+
+                File destFile = new File(getFilesDir(), "custom_alarm_sound");
+                try (InputStream in = getContentResolver().openInputStream(audioUri);
+                     FileOutputStream out = new FileOutputStream(destFile)) {
+                    byte[] buffer = new byte[8192];
+                    int len;
+                    while ((len = in.read(buffer)) > 0) {
+                        out.write(buffer, 0, len);
+                    }
+                }
+
+                SharedPreferences prefs = getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+                prefs.edit().putString("customSoundName", displayName).apply();
+
+                if (webView != null) {
+                    webView.evaluateJavascript("if (window.onCustomSoundPicked) { window.onCustomSoundPicked('" + displayName.replace("'", "\'") + "'); }", null);
+                }
+                Toast.makeText(this, "Звук выбран: " + displayName, Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                try {
-                    Intent intent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } catch (Exception ignored) {}
+                Toast.makeText(this, "Ошибка сохранения звука: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -653,49 +282,151 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
-        public void triggerExtraAlarm(int seconds, String sirenType) {
-            activity.runOnUiThread(() -> activity.startNativeExtraAlarm(seconds, sirenType));
+        public void triggerConfiguredVibration(int strength) {
+            activity.runOnUiThread(() -> {
+                ReminderBroadcastReceiver.performConfiguredVibration(activity, strength, false);
+            });
         }
 
         @JavascriptInterface
-        public void triggerNormalReminder(int secondsUntilZero, String eventTitle) {
-            activity.runOnUiThread(() -> activity.startNativeNormalReminder(secondsUntilZero, eventTitle));
+        public void triggerNotificationSound(int volumePercent, String soundType) {
+            activity.runOnUiThread(() -> {
+                ReminderBroadcastReceiver.playNotificationTone(activity, volumePercent, soundType);
+            });
         }
 
         @JavascriptInterface
         public void stopAlarm() {
-            activity.runOnUiThread(activity::stopAllAlarms);
+            activity.runOnUiThread(() -> {
+                activity.stopTorchStrobe();
+                Vibrator v = activity.getVibrator();
+                if (v != null) v.cancel();
+            });
         }
 
         @JavascriptInterface
-        public void triggerCustomReminder(int seconds, boolean useSound, boolean useVib, boolean useFlash, boolean useNotif, String sirenType) {
-            activity.runOnUiThread(() -> activity.startNativeCustomReminder(seconds, useSound, useVib, useFlash, useNotif, sirenType));
+        public void saveVibAndSoundSettings(int strength, int volume, String soundType, boolean autoNightUpdate) {
+            SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+            prefs.edit()
+                    .putInt("vibStrength", strength)
+                    .putInt("soundVolume", volume)
+                    .putString("soundType", soundType)
+                    .putBoolean("autoNightUpdate", autoNightUpdate)
+                    .apply();
+        }
+
+        @JavascriptInterface
+        public int getVibStrength() {
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE).getInt("vibStrength", 4);
+        }
+
+        @JavascriptInterface
+        public int getSoundVolume() {
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE).getInt("soundVolume", 50);
+        }
+
+        @JavascriptInterface
+        public String getSoundType() {
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE).getString("soundType", "chime");
+        }
+
+        @JavascriptInterface
+        public boolean getAutoNightUpdate() {
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE).getBoolean("autoNightUpdate", true);
+        }
+
+        @JavascriptInterface
+        public void applySeamlessHotUpdate(String htmlContent, String newVersion) {
+            activity.runOnUiThread(() -> {
+                try {
+                    File dir = new File(activity.getFilesDir(), "web_bundle");
+                    if (!dir.exists()) dir.mkdirs();
+                    File bundleFile = new File(dir, "index.html");
+                    try (FileOutputStream fos = new FileOutputStream(bundleFile)) {
+                        fos.write(htmlContent.getBytes("UTF-8"));
+                        fos.flush();
+                    }
+
+                    activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE)
+                            .edit().putString("hotBundleVersion", newVersion).apply();
+
+                    // Hot swap webview
+                    activity.webView.loadUrl(bundleFile.toURI().toString());
+                    Toast.makeText(activity, "Обновлено до версии " + newVersion, Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(activity, "Ошибка обновления: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void downloadAndApplySeamlessUpdate(String bundleUrl, String newVersion) {
+            new Thread(() -> {
+                try {
+                    activity.runOnUiThread(() -> {
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(20, 'Бесшовное скачивание...'); }", null);
+                        }
+                    });
+
+                    java.net.URL url = new java.net.URL(bundleUrl);
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setInstanceFollowRedirects(true);
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(20000);
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 PixRoyale");
+
+                    if (conn.getResponseCode() == 200) {
+                        InputStream in = conn.getInputStream();
+                        java.util.Scanner s = new java.util.Scanner(in, "UTF-8").useDelimiter("\\A");
+                        String content = s.hasNext() ? s.next() : "";
+                        s.close();
+                        in.close();
+
+                        if (content.length() > 500) {
+                            activity.runOnUiThread(() -> {
+                                if (activity.webView != null) {
+                                    activity.webView.evaluateJavascript("if (window.onDownloadProgress) { window.onDownloadProgress(100, 'Мгновенное применение...'); }", null);
+                                }
+                                applySeamlessHotUpdate(content, newVersion);
+                            });
+                            return;
+                        }
+                    }
+                    throw new Exception("HTTP " + conn.getResponseCode());
+                } catch (Exception e) {
+                    activity.runOnUiThread(() -> {
+                        if (activity.webView != null) {
+                            activity.webView.evaluateJavascript(
+                                    String.format("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Сбой: %s'); }", e.getMessage().replace("'", "\\'")),
+                                    null);
+                        }
+                    });
+                }
+            }).start();
         }
 
         @JavascriptInterface
         public void syncConfigAndReschedule(int captchaLead, int airdropLead, boolean extraOn, boolean normalOn, int nightStart, int nightEnd, boolean nightOn, boolean nightSilent, String sirenType, boolean customOn, boolean customFlash, boolean customVib, boolean customSound, boolean customNotif) {
-            activity.runOnUiThread(() -> {
-                try {
-                    android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
-                    prefs.edit()
-                            .putInt("captchaLeadTime", captchaLead)
-                            .putInt("airdropLeadTime", airdropLead)
-                            .putBoolean("extraModeEnabled", extraOn)
-                            .putBoolean("normalModeEnabled", normalOn)
-                            .putInt("nightStartHour", nightStart)
-                            .putInt("nightEndHour", nightEnd)
-                            .putBoolean("nightModeEnabled", nightOn)
-                            .putBoolean("nightSilentMode", nightSilent)
-                            .putString("sirenTypeSelect", sirenType != null ? sirenType : "nuclear")
-                            .putBoolean("customModeEnabled", customOn)
-                            .putBoolean("customFlash", customFlash)
-                            .putBoolean("customVib", customVib)
-                            .putBoolean("customSound", customSound)
-                            .putBoolean("customNotif", customNotif)
-                            .apply();
-                    AlarmScheduler.rescheduleAll(activity);
-                } catch (Exception ignored) {}
-            });
+            SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+            prefs.edit()
+                    .putInt("captchaLeadTime", captchaLead)
+                    .putInt("airdropLeadTime", airdropLead)
+                    .putBoolean("extraModeEnabled", extraOn)
+                    .putBoolean("normalModeEnabled", normalOn)
+                    .putInt("nightStartHour", nightStart)
+                    .putInt("nightEndHour", nightEnd)
+                    .putBoolean("nightModeEnabled", nightOn)
+                    .putBoolean("nightSilentMode", nightSilent)
+                    .putString("sirenTypeSelect", sirenType)
+                    .putBoolean("customModeEnabled", customOn)
+                    .putBoolean("customFlash", customFlash)
+                    .putBoolean("customVib", customVib)
+                    .putBoolean("customSound", customSound)
+                    .putBoolean("customNotif", customNotif)
+                    .apply();
+
+            AlarmScheduler.rescheduleAll(activity);
         }
 
         @JavascriptInterface
@@ -709,7 +440,7 @@ public class MainActivity extends AppCompatActivity {
                     conn.setReadTimeout(8000);
 
                     if (conn.getResponseCode() == 200) {
-                        java.io.InputStream in = conn.getInputStream();
+                        InputStream in = conn.getInputStream();
                         java.util.Scanner scanner = new java.util.Scanner(in, "UTF-8").useDelimiter("\\A");
                         String response = scanner.hasNext() ? scanner.next() : "";
                         scanner.close();
@@ -719,7 +450,8 @@ public class MainActivity extends AppCompatActivity {
                         String latestTag = release.optString("tag_name", "");
                         String releaseName = release.optString("name", latestTag);
                         String htmlUrl = release.optString("html_url", "");
-                        String downloadUrl = "";
+                        String apkDownloadUrl = "";
+                        String bundleDownloadUrl = "";
 
                         org.json.JSONArray assets = release.optJSONArray("assets");
                         if (assets != null) {
@@ -727,40 +459,46 @@ public class MainActivity extends AppCompatActivity {
                                 org.json.JSONObject asset = assets.getJSONObject(i);
                                 String name = asset.optString("name", "");
                                 if (name.endsWith(".apk")) {
-                                    downloadUrl = asset.optString("browser_download_url", "");
-                                    break;
+                                    apkDownloadUrl = asset.optString("browser_download_url", "");
+                                } else if (name.equals("index.html") || name.endsWith(".html")) {
+                                    bundleDownloadUrl = asset.optString("browser_download_url", "");
                                 }
                             }
                         }
 
-                        if (downloadUrl.isEmpty() && !latestTag.isEmpty()) {
-                            downloadUrl = "https://github.com/ivanmaspa/pixroyale-reminders/releases/download/" + latestTag + "/PixRoyale_" + latestTag + ".apk";
+                        if (apkDownloadUrl.isEmpty() && !latestTag.isEmpty()) {
+                            apkDownloadUrl = "https://github.com/ivanmaspa/pixroyale-reminders/releases/download/" + latestTag + "/PixRoyale_" + latestTag + ".apk";
+                        }
+                        if (bundleDownloadUrl.isEmpty() && !latestTag.isEmpty()) {
+                            bundleDownloadUrl = "https://raw.githubusercontent.com/ivanmaspa/pixroyale-reminders/main/app/src/main/assets/index.html";
                         }
 
                         final String fTag = latestTag;
                         final String fName = releaseName;
-                        final String fUrl = downloadUrl.isEmpty() ? htmlUrl : downloadUrl;
+                        final String fApkUrl = apkDownloadUrl;
+                        final String fBundleUrl = bundleDownloadUrl;
 
                         activity.runOnUiThread(() -> {
                             if (activity.webView != null) {
-                                String js = String.format("if (window.onUpdateCheckResult) { window.onUpdateCheckResult('%s', '%s', '%s'); }",
+                                String js = String.format("if (window.onUpdateCheckResult) { window.onUpdateCheckResult('%s', '%s', '%s', '%s'); }",
                                         fTag.replace("'", "\\'"),
                                         fName.replace("'", "\\'"),
-                                        fUrl.replace("'", "\\'"));
+                                        fApkUrl.replace("'", "\\'"),
+                                        fBundleUrl.replace("'", "\\'"));
                                 activity.webView.evaluateJavascript(js, null);
                             }
                         });
                     } else {
                         activity.runOnUiThread(() -> {
                             if (activity.webView != null) {
-                                activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Ошибка соединения', null); }", null);
+                                activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Сбой сети', null, null); }", null);
                             }
                         });
                     }
                 } catch (Exception e) {
                     activity.runOnUiThread(() -> {
                         if (activity.webView != null) {
-                            activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Ошибка проверки: " + e.getMessage() + "', null); }", null);
+                            activity.webView.evaluateJavascript("if (window.onUpdateCheckResult) { window.onUpdateCheckResult(null, 'Ошибка: " + e.getMessage() + "', null, null); }", null);
                         }
                     });
                 }
@@ -780,34 +518,19 @@ public class MainActivity extends AppCompatActivity {
                     java.net.URL url = new java.net.URL(downloadUrl);
                     java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
                     conn.setInstanceFollowRedirects(true);
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; PixRoyale-x2i01z)");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 PixRoyale");
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(30000);
 
-                    int responseCode = conn.getResponseCode();
-                    if (responseCode == java.net.HttpURLConnection.HTTP_MOVED_PERM || 
-                        responseCode == java.net.HttpURLConnection.HTTP_MOVED_TEMP || 
-                        responseCode == 307 || responseCode == 308) {
-                        String newUrl = conn.getHeaderField("Location");
-                        conn = (java.net.HttpURLConnection) new java.net.URL(newUrl).openConnection();
-                        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; PixRoyale-x2i01z)");
-                        conn.setConnectTimeout(15000);
-                        conn.setReadTimeout(30000);
-                    }
-
                     int fileLength = conn.getContentLength();
-                    java.io.InputStream input = new java.io.BufferedInputStream(conn.getInputStream());
+                    InputStream input = new java.io.BufferedInputStream(conn.getInputStream());
 
                     File cacheDir = activity.getExternalCacheDir();
-                    if (cacheDir == null) {
-                        cacheDir = activity.getCacheDir();
-                    }
+                    if (cacheDir == null) cacheDir = activity.getCacheDir();
                     File apkFile = new File(cacheDir, "update.apk");
-                    if (apkFile.exists()) {
-                        apkFile.delete();
-                    }
+                    if (apkFile.exists()) apkFile.delete();
 
-                    java.io.OutputStream output = new java.io.FileOutputStream(apkFile);
+                    OutputStream output = new FileOutputStream(apkFile);
                     byte[] data = new byte[8192];
                     long total = 0;
                     int count;
@@ -826,8 +549,8 @@ public class MainActivity extends AppCompatActivity {
                             activity.runOnUiThread(() -> {
                                 if (activity.webView != null) {
                                     activity.webView.evaluateJavascript(
-                                        String.format(java.util.Locale.US, "if (window.onDownloadProgress) { window.onDownloadProgress(%d, '%s'); }", progress, status),
-                                        null);
+                                            String.format(java.util.Locale.US, "if (window.onDownloadProgress) { window.onDownloadProgress(%d, '%s'); }", progress, status),
+                                            null);
                                 }
                             });
                         }
@@ -848,47 +571,12 @@ public class MainActivity extends AppCompatActivity {
                     activity.runOnUiThread(() -> {
                         if (activity.webView != null) {
                             activity.webView.evaluateJavascript(
-                                String.format("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Ошибка: %s'); }", (e.getMessage() != null ? e.getMessage().replace("'", "\'") : "Сбой сети")),
-                                null);
+                                    String.format("if (window.onDownloadProgress) { window.onDownloadProgress(-1, 'Ошибка: %s'); }", (e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Сбой сети")),
+                                    null);
                         }
                     });
                 }
             }).start();
-        }
-
-        @JavascriptInterface
-        public void openDownloadUrl(String url) {
-            activity.runOnUiThread(() -> {
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    activity.startActivity(intent);
-                } catch (Exception ignored) {}
-            });
-        }
-
-        @JavascriptInterface
-        public void testSingleVibration() {
-            activity.runOnUiThread(() -> {
-                try {
-                    Vibrator v = activity.getVibrator();
-                    if (v != null && v.hasVibrator()) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            VibrationEffect effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                VibrationAttributes va = new VibrationAttributes.Builder()
-                                        .setUsage(VibrationAttributes.USAGE_ALARM)
-                                        .build();
-                                v.vibrate(effect, va);
-                            } else {
-                                v.vibrate(effect);
-                            }
-                        } else {
-                            v.vibrate(3000);
-                        }
-                    }
-                } catch (Exception ignored) {}
-            });
         }
 
         @JavascriptInterface
@@ -898,8 +586,7 @@ public class MainActivity extends AppCompatActivity {
 
         @JavascriptInterface
         public String getCustomSoundName() {
-            android.content.SharedPreferences prefs = activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
-            return prefs.getString("customSoundName", "");
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE).getString("customSoundName", "");
         }
 
         @JavascriptInterface
