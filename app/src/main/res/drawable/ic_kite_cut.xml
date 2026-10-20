@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Background Dark Disc -->
+    <path
+        android:fillColor="#0D1117"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Top Left Sliced Shield Half (Matte Charcoal with Cyan rim) -->
+    <path
+        android:fillColor="#1F293D"
+        android:pathData="M54,12 C30.8,12 12,30.8 12,54 C12,68.2 19,80.7 29.8,88.4 L79.6,38.6 C71.9,27.8 59.4,20.8 54,12 Z" />
+
+    <!-- Bottom Right Sliced Shield Half (Slightly Offset / Sliced in Half) -->
+    <path
+        android:fillColor="#151C2B"
+        android:pathData="M84.2,25.6 L34.4,75.4 C42.1,86.2 54.6,93.2 60,102 C83.2,102 102,83.2 102,60 C102,45.8 95,33.3 84.2,25.6 Z" />
+
+    <!-- Diagonal Slice Laser/Blade Cut Line (Crisp Cyan-White Line) -->
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2.5"
+        android:pathData="M18,94 L90,22" />
+
+    <!-- Paper Kite (Бумажный змей) Slicing Diagonally -->
+    <!-- Left Wing -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M58,24 L36,54 L54,58 Z" />
+
+    <!-- Right Wing (Subtle Shadow for 3D Origami feel) -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M58,24 L78,42 L54,58 Z" />
+
+    <!-- Kite Center Spine / Tail Section -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M54,58 L52,78 L56,74 Z" />
+
+    <!-- Sharp Slicing Nose Glint -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M58,24 L55,30 L61,28 Z" />
+</vector>
