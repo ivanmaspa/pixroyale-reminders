@@ -32,8 +32,8 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
     public static final String EXTRA_TEXT = "extra_text";
     public static final String EXTRA_DURATION = "extra_duration"; // in seconds
 
-    private static final String CHANNEL_ID_SILENT = "pixel_royale_silent_channel";
-    private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_channel";
+    private static final String CHANNEL_ID_SILENT = "pixel_royale_reminder_v3";
+    private static final String CHANNEL_ID_ALARM = "pixel_royale_alarm_v3";
     private static final String PREFS_AUDIO = "PixRoyaleAudioState";
 
     @Override
@@ -61,7 +61,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         PowerManager.WakeLock wakeLock = null;
         if (pm != null) {
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "PixRoyale:AlarmWakeLock");
-            wakeLock.acquire(10 * 1000L); // 10 seconds max
+            wakeLock.acquire(15 * 1000L); // 10 seconds max
         }
 
         // Check Night Mode preferences
@@ -158,9 +158,7 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         // Automatically reschedule next alarms to keep cycle going forever
         AlarmScheduler.rescheduleAll(context);
 
-        if (wakeLock != null && wakeLock.isHeld()) {
-            try { wakeLock.release(); } catch (Exception ignored) {}
-        }
+        // Keep wakeLock held for duration of vibration/alarm - timeout of 15s will auto-release
     }
 
     public static void prepareWeakAudioState(Context context) {
@@ -235,14 +233,19 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
 
+        String channelId = isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel ch = new NotificationChannel(
-                    isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT,
-                    isAlarm ? "Пиксель Рояль: Экстра Тревога" : "Пиксель Рояль: Уведомления",
+                    channelId,
+                    isAlarm ? "Пиксель Рояль: Тревога" : "Пиксель Рояль: Напоминания",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            ch.setSound(null, null);
-            ch.enableVibration(false);
+            ch.setDescription("Уведомления и вибро-напоминания");
+            ch.enableVibration(true);
+            ch.setVibrationPattern(new long[]{0, 600, 250, 600, 250, 800});
+            ch.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+            ch.setBypassDnd(true);
             nm.createNotificationChannel(ch);
         }
 
@@ -250,23 +253,24 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(
                 context,
-                0,
+                (int) System.currentTimeMillis(),
                 openIntent,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT
         );
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                context,
-                isAlarm ? CHANNEL_ID_ALARM : CHANNEL_ID_SILENT
-        )
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(pi)
+                .setFullScreenIntent(pi, true)
+                .setVibrate(new long[]{0, 600, 250, 600, 250, 800})
                 .setAutoCancel(true);
 
-        nm.notify((int) System.currentTimeMillis(), builder.build());
+        nm.notify((int) (System.currentTimeMillis() % 100000), builder.build());
     }
 
     private void performVibration(Context context, long durationMs, boolean isAlarm) {
@@ -281,18 +285,26 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             }
 
             if (v != null && v.hasVibrator()) {
+                long[] pattern = isAlarm ? 
+                        new long[]{0, 800, 200, 800, 200, 800, 200, 800} : 
+                        new long[]{0, 600, 200, 600, 200, 600};
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    VibrationEffect effect = VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE);
+                    VibrationEffect effect = VibrationEffect.createWaveform(pattern, -1);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         VibrationAttributes va = new VibrationAttributes.Builder()
-                                .setUsage(isAlarm ? VibrationAttributes.USAGE_ALARM : VibrationAttributes.USAGE_NOTIFICATION)
+                                .setUsage(VibrationAttributes.USAGE_ALARM)
                                 .build();
                         v.vibrate(effect, va);
                     } else {
-                        v.vibrate(effect);
+                        AudioAttributes aa = new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build();
+                        v.vibrate(effect, aa);
                     }
                 } else {
-                    v.vibrate(durationMs);
+                    v.vibrate(pattern, -1);
                 }
             }
         } catch (Exception ignored) {}
