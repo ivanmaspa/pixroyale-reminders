@@ -221,12 +221,20 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
             nm.createNotificationChannel(ch);
         }
 
-        Intent openIntent = new Intent(context, MainActivity.class);
-        openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pi = PendingIntent.getActivity(
+        Intent gameIntent = createGameLaunchIntent(context);
+        PendingIntent gamePi = PendingIntent.getActivity(
                 context,
                 (int) System.currentTimeMillis(),
-                openIntent,
+                gameIntent,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        Intent openAppIntent = new Intent(context, MainActivity.class);
+        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent appPi = PendingIntent.getActivity(
+                context,
+                (int) System.currentTimeMillis() + 1,
+                openAppIntent,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT
         );
 
@@ -237,8 +245,10 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContentIntent(pi)
-                .setFullScreenIntent(pi, true)
+                .setContentIntent(gamePi)
+                .setFullScreenIntent(gamePi, true)
+                .addAction(R.drawable.ic_kite_cut, "🎮 В игру", gamePi)
+                .addAction(R.drawable.ic_kite_cut, "⏱ В приложение", appPi)
                 .setVibrate(new long[]{0, 500, 200, 500, 200, 600})
                 .setAutoCancel(true);
 
