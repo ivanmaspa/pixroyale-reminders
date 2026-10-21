@@ -201,6 +201,73 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         } catch (Exception ignored) {}
     }
 
+    public static Intent createGameLaunchIntent(Context context) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
+            String customTarget = prefs.getString("gameLaunchTarget", "").trim();
+
+            if (!customTarget.isEmpty()) {
+                if (customTarget.startsWith("http://") || customTarget.startsWith("https://") || customTarget.startsWith("tg://")) {
+                    Intent urlIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(customTarget));
+                    urlIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    return urlIntent;
+                } else {
+                    Intent pkgIntent = context.getPackageManager().getLaunchIntentForPackage(customTarget);
+                    if (pkgIntent != null) {
+                        pkgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        return pkgIntent;
+                    }
+                }
+            }
+
+            android.content.pm.PackageManager pm = context.getPackageManager();
+            String myPkg = context.getPackageName();
+            try {
+                java.util.List<android.content.pm.PackageInfo> installed = pm.getInstalledPackages(0);
+                for (android.content.pm.PackageInfo pi : installed) {
+                    String pname = pi.packageName.toLowerCase();
+                    if (pname.equals(myPkg)) continue;
+                    if ((pname.contains("pixel") || pname.contains("pix")) && (pname.contains("royale") || pname.contains("battle") || pname.contains("empire"))) {
+                        Intent launchIntent = pm.getLaunchIntentForPackage(pi.packageName);
+                        if (launchIntent != null) {
+                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            return launchIntent;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            String[] tgPackages = new String[]{
+                    "org.telegram.messenger",
+                    "org.telegram.plus",
+                    "org.thunderdog.challegram",
+                    "org.telegram.messenger.web",
+                    "org.telegram.messenger.beta"
+            };
+            Uri tgUri = Uri.parse("tg://resolve?domain=masiksssgegai_bot");
+            for (String tgPkg : tgPackages) {
+                try {
+                    pm.getPackageInfo(tgPkg, 0);
+                    Intent tgIntent = new Intent(Intent.ACTION_VIEW, tgUri);
+                    tgIntent.setPackage(tgPkg);
+                    tgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    return tgIntent;
+                } catch (Exception ignored) {}
+            }
+
+            try {
+                Intent genericTg = new Intent(Intent.ACTION_VIEW, tgUri);
+                genericTg.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                return genericTg;
+            } catch (Exception ignored) {}
+
+        } catch (Exception ignored) {}
+
+        Intent fallback = new Intent(context, MainActivity.class);
+        fallback.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        return fallback;
+    }
+
     private void showNotification(Context context, String title, String text, boolean isAlarm) {
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
