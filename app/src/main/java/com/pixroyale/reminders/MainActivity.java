@@ -1,4 +1,4 @@
-﻿package com.pixroyale.reminders;
+package com.pixroyale.reminders;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
@@ -646,7 +646,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     try {
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/PBMap_bot"));
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/masiksssgegai_bot"));
                         webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         activity.startActivity(webIntent);
                     } catch (Exception ignored) {}
