@@ -590,6 +590,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @JavascriptInterface
+        public void setGameLaunchTarget(String target) {
+            activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("gameLaunchTarget", target != null ? target.trim() : "")
+                    .apply();
+        }
+
+        @JavascriptInterface
+        public String getGameLaunchTarget() {
+            return activity.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE)
+                    .getString("gameLaunchTarget", "");
+        }
+
+        @JavascriptInterface
+        public void testLaunchGame() {
+            activity.runOnUiThread(() -> {
+                try {
+                    Intent intent = ReminderBroadcastReceiver.createGameLaunchIntent(activity);
+                    activity.startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(activity, "Ошибка запуска: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void openTelegramBot(String usernameOrUrl) {
             activity.runOnUiThread(() -> {
                 try {
