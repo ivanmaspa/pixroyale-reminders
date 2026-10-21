@@ -85,7 +85,7 @@
     </div>
     <div class="mt-4 text-center">
       <h1 class="text-base font-extrabold tracking-tight text-white font-sans">Pixel Royale</h1>
-      <p class="text-[11px] text-slate-400 font-mono mt-0.5">Reminders & Map • v.x2i05z</p>
+      <p class="text-[11px] text-slate-400 font-mono mt-0.5">Reminders & Map • v.x2i06z</p>
     </div>
   </div>
 
@@ -105,7 +105,7 @@
       <div>
         <div class="flex items-center gap-1.5">
           <h2 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h2>
-          <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono font-bold">x2i05z</span>
+          <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono font-bold">x2i06z</span>
         </div>
         <button onclick="openAuthModal()" id="headerUserBadge" class="text-[10px] text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1">
           <i data-lucide="user" class="w-3 h-3"></i> <span id="headerUserLabel">Гость (Нажмите для входа)</span>
@@ -147,13 +147,24 @@
 
       <div class="space-y-3">
         <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ваш Telegram Username или ID:</label>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Telegram @username или ID:</label>
           <input type="text" id="authUsernameInput" placeholder="@username или ID" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0f17] border border-slate-700 text-sm text-white focus:border-sky-400 font-mono">
         </div>
 
-        <button onclick="handleTelegramRegister()" class="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-400">6-значный проверочный код:</label>
+            <button type="button" onclick="openGetCodeInTelegram()" class="text-[10px] text-sky-400 hover:underline flex items-center gap-1 font-bold">
+              <i data-lucide="send" class="w-3 h-3"></i> Получить код в боте
+            </button>
+          </div>
+          <input type="text" id="authCodeInput" maxlength="6" placeholder="000000" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0f17] border border-slate-700 text-base text-center tracking-[6px] text-white focus:border-sky-400 font-mono font-bold">
+          <p class="text-[9px] text-slate-400 mt-1">Откройте @masiksssgegai_bot и нажмите <b>/code</b> или кнопку '🔐 Код для входа'</p>
+        </div>
+
+        <button onclick="handleTelegramRegisterWithCode()" class="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
           <i data-lucide="check" class="w-4 h-4"></i>
-          <span>Зарегистрироваться через Telegram</span>
+          <span>Подтвердить вход по коду</span>
         </button>
 
         <button onclick="handleGuestLogin()" class="w-full py-2.5 rounded-2xl bg-[#0e131d] hover:bg-[#141b29] text-slate-300 text-xs font-bold border border-slate-800 transition-all flex items-center justify-center gap-1.5">
@@ -217,7 +228,7 @@
       <button onclick="openBot('masiksssgegai_bot')" class="w-full py-2 rounded-xl bg-[#161d2b] border border-slate-700 text-sky-400 text-xs font-bold flex items-center justify-center gap-1.5">
         <i data-lucide="send" class="w-3.5 h-3.5"></i> @masiksssgegai_bot
       </button>
-      <div class="text-[10px] text-center text-slate-500 font-mono">Pixel Royale Reminders • x2i05z</div>
+      <div class="text-[10px] text-center text-slate-500 font-mono">Pixel Royale Reminders • x2i06z</div>
     </div>
   </aside>
 
@@ -502,6 +513,38 @@
         </div>
       </div>
 
+            <!-- GAME LAUNCH ON NOTIFICATION -->
+      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
+              <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i> Запуск игры по уведомлению
+            </h3>
+            <p class="text-[10px] text-slate-400">При нажатии на уведомление сразу запускается игра</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 text-[10px] font-bold border border-purple-500/20">
+            Game Action
+          </span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="block text-[11px] text-slate-300 font-medium mb-1">Пакет приложения или URL (по умолчанию: авто-поиск/Telegram):</label>
+            <input type="text" id="gameLaunchTargetInput" onchange="saveGameLaunchTarget()" placeholder="Оставьте пустым для автопоиска или укажите tg://..." class="w-full px-3 py-2 rounded-xl bg-[#0e131d] border border-slate-700 text-white font-mono text-[11px] focus:border-purple-400">
+          </div>
+
+          <div class="flex gap-2 pt-1">
+            <button onclick="testGameLaunch()" class="flex-1 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 font-bold text-xs border border-purple-500/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+              <i data-lucide="play" class="w-3.5 h-3.5"></i>
+              <span>Проверить запуск игры</span>
+            </button>
+            <button onclick="resetGameLaunchTarget()" class="px-3 py-2 rounded-xl bg-[#0e131d] text-slate-400 hover:text-white border border-slate-700 text-xs">
+              Сброс
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 2. VIBRATION STRENGTH SLIDER -->
       <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
         <div class="flex items-center justify-between">
@@ -600,7 +643,7 @@
             </div>
             <div>
               <h3 class="text-xs font-extrabold text-white">Бесшовные обновления</h3>
-              <p class="text-[10px] text-slate-400">Текущая версия: <span class="font-mono text-sky-400 font-bold">x2i05z</span></p>
+              <p class="text-[10px] text-slate-400">Текущая версия: <span class="font-mono text-sky-400 font-bold">x2i06z</span></p>
             </div>
           </div>
           <span id="updateAvailBadge" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">Новая версия</span>
@@ -806,29 +849,124 @@
       document.getElementById('authModalBackdrop').classList.add('hidden');
     }
 
-    function handleTelegramRegister() {
-      const val = document.getElementById('authUsernameInput').value.trim();
-      if (!val) {
-        alert('Пожалуйста, введите ваш Telegram username или ID');
+    function openGetCodeInTelegram() {
+      openBot('masiksssgegai_bot?start=code');
+    }
+
+    // Pure JS TOTP computation for offline verification
+    function computeSimpleHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash | 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function verifyClientTotp(username, code) {
+      const clean = username.toLowerCase().replace('@', '').trim();
+      let targetUid = null;
+      if (clean === 'bigbigmas' || clean === '8871602493') targetUid = 8871602493;
+      else if (clean === 'ivanmaspa' || clean === '8262143167') targetUid = 8262143167;
+      else if (/^\d+$/.test(clean)) targetUid = parseInt(clean);
+
+      // If developer account is entered, strictly check secret hash
+      if (targetUid === 8871602493 || targetUid === 8262143167) {
+        const now = Math.floor(Date.now() / 1000);
+        const win = Math.floor(now / 900);
+        // Salt: MasaiAuth2026_SecureKey_PixelRoyale
+        let matched = false;
+        for (const w of [win, win - 1]) {
+          const raw = `MasaiAuth2026_SecureKey_PixelRoyale:${targetUid}:${w}`;
+          const calcCode = String((computeSimpleHash(raw) % 900000) + 100000);
+          if (calcCode === code) {
+            matched = true;
+            break;
+          }
+        }
+        if (matched) {
+          return { ok: true, username: 'Bigbigmas', user_id: targetUid, is_dev: true, dev_token: 'LOCAL_DEV_PASS_' + targetUid };
+        } else {
+          return { ok: false, error: 'Неверный код для аккаунта разработчика! Получите актуальный код в боте @masiksssgegai_bot.' };
+        }
+      }
+
+      // For regular players: non-empty 6 digits registers player
+      if (code && code.length === 6) {
+        return { ok: true, username: username.replace('@', ''), user_id: targetUid || 0, is_dev: false, dev_token: '' };
+      }
+      return { ok: false, error: 'Код должен содержать ровно 6 цифр.' };
+    }
+
+    async function handleTelegramRegisterWithCode() {
+      const usernameInput = document.getElementById('authUsernameInput');
+      const codeInput = document.getElementById('authCodeInput');
+      const username = usernameInput ? usernameInput.value.trim().replace('@', '') : '';
+      const code = codeInput ? codeInput.value.trim() : '';
+
+      if (!username) {
+        alert('Пожалуйста, укажите ваш Telegram @username или ID.');
         return;
       }
-      let clean = val.replace('@', '');
-      const isDev = (clean.toLowerCase() === 'bigbigmas' || clean === '8262143167' || clean === '8871602493');
+      if (!code || code.length !== 6) {
+        alert('Пожалуйста, введите 6-значный проверочный код. Нажмите кнопку «Получить код в боте».');
+        return;
+      }
+
+      let verified = false;
+      let resData = null;
+
+      // 1. Try server REST API verification
+      try {
+        const resp = await fetch('http://127.0.0.1:8088/api/auth/verify_code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, code: code })
+        });
+        if (resp.ok) {
+          resData = await resp.json();
+          if (resData.ok) {
+            verified = true;
+          }
+        }
+      } catch (e) {
+        // Fallback to local offline verification
+      }
+
+      // 2. Client-side algorithm check
+      if (!verified) {
+        const fallback = verifyClientTotp(username, code);
+        if (fallback.ok) {
+          verified = true;
+          resData = fallback;
+        } else {
+          alert(fallback.error || 'Код не подтвержден. Запросите новый код в боте @masiksssgegai_bot');
+          return;
+        }
+      }
+
       currentUser = {
         registered: true,
-        username: clean,
-        isDev: isDev
+        username: resData.username || username,
+        userId: resData.user_id || 0,
+        isDev: (resData.is_dev === true),
+        devToken: resData.dev_token || ''
       };
+
       localStorage.setItem('pixroyale_user', JSON.stringify(currentUser));
       updateUserUI();
       closeAuthModal();
 
-      // Sync registration with gateway API
-      fetch('http://127.0.0.1:8088/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: clean, full_name: clean })
-      }).catch(() => {});
+      if (currentUser.isDev) {
+        showToast('👑 Режим разработчика разблокирован!');
+      } else {
+        showToast('✨ Вход выполнен: @' + currentUser.username);
+      }
+    }
+
+    function handleTelegramRegister() {
+      handleTelegramRegisterWithCode();
     }
 
     function handleGuestLogin() {
@@ -853,28 +991,33 @@
       const drawerStatus = document.getElementById('drawerUserStatus');
       const devBnav = document.getElementById('bnav-dev');
       const devDrawerBtn = document.getElementById('drawerDevBtn');
+      const devContent = document.getElementById('content-dev');
       const lockedCard = document.getElementById('aiGuestLockedCard');
       const activeChat = document.getElementById('aiActiveChatPanel');
 
-      if (currentUser.isDev) {
-        badgeLabel.textContent = `👑 Dev: @${currentUser.username}`;
-        drawerStatus.textContent = `Разработчик: @${currentUser.username}`;
+      const isDevAuthorized = (currentUser && currentUser.isDev === true && currentUser.devToken && currentUser.devToken.length > 5);
+
+      if (isDevAuthorized) {
+        if (badgeLabel) badgeLabel.textContent = `👑 Dev: @${currentUser.username}`;
+        if (drawerStatus) drawerStatus.textContent = `Разработчик: @${currentUser.username}`;
         if (devBnav) devBnav.classList.remove('hidden');
         if (devDrawerBtn) devDrawerBtn.classList.remove('hidden');
         if (lockedCard) lockedCard.classList.add('hidden');
         if (activeChat) activeChat.classList.remove('hidden');
-      } else if (currentUser.registered) {
-        badgeLabel.textContent = `✨ @${currentUser.username}`;
-        drawerStatus.textContent = `Игрок: @${currentUser.username}`;
+      } else if (currentUser && currentUser.registered) {
+        if (badgeLabel) badgeLabel.textContent = `✨ @${currentUser.username}`;
+        if (drawerStatus) drawerStatus.textContent = `Игрок: @${currentUser.username}`;
         if (devBnav) devBnav.classList.add('hidden');
         if (devDrawerBtn) devDrawerBtn.classList.add('hidden');
+        if (devContent) devContent.classList.add('hidden');
         if (lockedCard) lockedCard.classList.add('hidden');
         if (activeChat) activeChat.classList.remove('hidden');
       } else {
-        badgeLabel.textContent = `👤 Гость (Вход)`;
-        drawerStatus.textContent = `Статус: Гость`;
+        if (badgeLabel) badgeLabel.textContent = `👤 Гость (Вход)`;
+        if (drawerStatus) drawerStatus.textContent = `Статус: Гость`;
         if (devBnav) devBnav.classList.add('hidden');
         if (devDrawerBtn) devDrawerBtn.classList.add('hidden');
+        if (devContent) devContent.classList.add('hidden');
         if (lockedCard) lockedCard.classList.remove('hidden');
         if (activeChat) activeChat.classList.add('hidden');
       }
@@ -1301,7 +1444,7 @@
         return;
       }
 
-      const currentVer = "x2i05z";
+      const currentVer = "x2i06z";
       if (tag !== currentVer) {
         latestTagVersion = tag;
         latestBundleDownloadUrl = bundleUrl;
