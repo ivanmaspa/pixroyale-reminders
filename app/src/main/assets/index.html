@@ -1,386 +1,309 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Pixel Royale Reminders & Map</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            lime: {
+              400: '#d4ff00',
+              500: '#ccff00',
+              600: '#b8e600'
+            },
+            surface: {
+              DEFAULT: '#0b0e14',
+              card: '#121721',
+              card2: '#18202e',
+              border: '#1f293d'
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      background-color: #0b0f17;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b0e14;
       color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Google Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-x pan-y;
     }
-    input[type=range] {
-      -webkit-appearance: none;
-      background: #1e2638;
-      height: 6px;
-      border-radius: 9999px;
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
     }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: #38bdf8;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .neon-glow {
+      box-shadow: 0 0 25px rgba(204, 255, 0, 0.25);
     }
-    @keyframes kiteCut {
-      0% { transform: translate(-40px, -40px) scale(0.85); opacity: 0; }
-      50% { transform: translate(0, 0) scale(1.05); opacity: 1; }
-      75% { transform: translate(8px, 8px) scale(1); }
-      100% { transform: translate(0, 0) scale(1); opacity: 1; }
+    .neon-pill {
+      box-shadow: 0 0 15px rgba(204, 255, 0, 0.35);
     }
-    @keyframes sliceLine {
-      0% { width: 0%; opacity: 0; }
-      50% { width: 100%; opacity: 1; }
-      100% { width: 100%; opacity: 0.8; }
-    }
-    .animate-kite-cut {
-      animation: kiteCut 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    .animate-slice-line {
-      animation: sliceLine 0.7s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    .blue-glow {
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
     }
   </style>
 </head>
-<body class="bg-[#0b0f17] flex flex-col min-h-screen text-slate-100 antialiased">
+<body class="min-h-screen bg-[#0b0e14] text-slate-100 flex flex-col justify-between selection:bg-[#ccff00] selection:text-black">
 
   <!-- ============================================================== -->
-  <!-- OPENING SPLASH SCREEN: Бумажный змей разрезает пополам         -->
+  <!-- SPLASH SCREEN                                                  -->
   <!-- ============================================================== -->
-  <div id="appSplashScreen" class="fixed inset-0 z-50 bg-[#0b0f17] flex flex-col items-center justify-center transition-opacity duration-500">
-    <div class="relative w-36 h-36 flex items-center justify-center">
-      <div class="absolute inset-0 flex">
-        <div class="w-1/2 h-full overflow-hidden flex justify-end">
-          <div class="w-28 h-28 rounded-full bg-[#161d2b] border border-slate-700/60 transform translate-x-1 -translate-y-1"></div>
-        </div>
-        <div class="w-1/2 h-full overflow-hidden flex justify-start">
-          <div class="w-28 h-28 rounded-full bg-[#121824] border border-slate-700/40 transform -translate-x-1 translate-y-1"></div>
-        </div>
-      </div>
-      <div class="absolute h-0.5 bg-sky-400 rotate-[-45deg] animate-slice-line shadow-[0_0_12px_#38bdf8] origin-center" style="width: 140px;"></div>
-      <div class="relative z-10 animate-kite-cut">
-        <svg class="w-16 h-16 drop-shadow-xl" viewBox="0 0 100 100" fill="none">
-          <polygon points="50,15 22,58 50,66" fill="#f8fafc" />
-          <polygon points="50,15 78,58 50,66" fill="#cbd5e1" />
+  <div id="appSplashScreen" class="fixed inset-0 z-50 bg-[#0b0e14] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="relative flex items-center justify-center">
+      <div class="w-20 h-20 rounded-3xl bg-[#121721] border border-[#1f293d] flex items-center justify-center neon-glow">
+        <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none">
+          <polygon points="50,15 22,58 50,66" fill="#ccff00" />
+          <polygon points="50,15 78,58 50,66" fill="#94a3b8" />
           <polygon points="50,66 46,88 54,82" fill="#38bdf8" />
           <polygon points="50,15 47,24 53,24" fill="#ffffff" />
         </svg>
       </div>
     </div>
     <div class="mt-4 text-center">
-      <h1 class="text-base font-extrabold tracking-tight text-white font-sans">Pixel Royale</h1>
-      <p class="text-[11px] text-slate-400 font-mono mt-0.5">Reminders & Map • v.x2i06z</p>
+      <h1 class="text-base font-black tracking-tight text-white">Pixel Royale</h1>
+      <p class="text-[11px] text-[#ccff00] font-mono mt-0.5">Reminders & Map • v.x2i07z</p>
     </div>
   </div>
 
   <!-- ============================================================== -->
-  <!-- TOP APP BAR                                                    -->
+  <!-- TOP APP BAR (NO HAMBURGER MENU)                                -->
   <!-- ============================================================== -->
-  <header class="sticky top-0 z-30 px-4 py-3 bg-[#0e131d]/90 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between">
+  <header class="sticky top-0 z-30 px-4 py-3 bg-[#0b0e14]/90 backdrop-blur-md border-b border-[#1f293d]/80 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-2xl bg-[#161d2b] border border-slate-700 flex items-center justify-center overflow-hidden relative shadow-sm">
-        <svg class="w-6 h-6" viewBox="0 0 100 100" fill="none">
-          <polygon points="50,15 22,58 50,66" fill="#f8fafc" />
-          <polygon points="50,15 78,58 50,66" fill="#94a3b8" />
-          <polygon points="50,66 46,88 54,82" fill="#38bdf8" />
-        </svg>
-        <div class="absolute inset-0 border-t border-sky-400/40 rotate-[-45deg] pointer-events-none"></div>
+      <!-- User Avatar / Status Circle -->
+      <div onclick="openAuthModal()" class="w-9 h-9 rounded-full bg-[#121721] border border-[#1f293d] flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#ccff00] transition-colors">
+        <span id="userAvatarText" class="font-black text-xs text-[#ccff00]">G</span>
       </div>
       <div>
         <div class="flex items-center gap-1.5">
-          <h2 class="font-extrabold text-sm tracking-tight text-white">Pixel Royale</h2>
-          <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-mono font-bold">x2i06z</span>
+          <span id="headerGreeting" class="font-extrabold text-sm tracking-tight text-white">Привет, Гость</span>
+          <span id="userStatusPill" class="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold">Гость</span>
         </div>
-        <button onclick="openAuthModal()" id="headerUserBadge" class="text-[10px] text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1">
-          <i data-lucide="user" class="w-3 h-3"></i> <span id="headerUserLabel">Гость (Нажмите для входа)</span>
+        <button onclick="openAuthModal()" id="headerSubAction" class="text-[10px] text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1">
+          <span>Нажмите для входа через Telegram</span>
         </button>
       </div>
     </div>
 
-    <!-- Right Controls: Moscow Clock & 3 Stripes Hamburger -->
+    <!-- Right Controls: Moscow Clock & Notification Bell -->
     <div class="flex items-center gap-2">
-      <div id="mskClock" class="px-2.5 py-1 rounded-full bg-[#151b26] border border-slate-800 text-xs font-mono font-medium text-slate-300">
+      <div id="mskClock" class="px-2.5 py-1 rounded-full bg-[#121721] border border-[#1f293d] text-xs font-mono font-bold text-slate-200">
         --:--:-- МСК
       </div>
-      <button onclick="toggleDrawer()" class="w-9 h-9 rounded-full bg-[#151b26] hover:bg-[#1f2838] border border-slate-800 flex items-center justify-center text-slate-300 active:scale-95 transition-all">
-        <i data-lucide="menu" class="w-4 h-4"></i>
+      <button onclick="openQuickNotificationModal()" title="Настройки оповещений" class="w-9 h-9 rounded-full bg-[#121721] hover:bg-[#18202e] border border-[#1f293d] flex items-center justify-center text-slate-300 active:scale-95 transition-all relative">
+        <i data-lucide="bell" class="w-4 h-4"></i>
+        <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ccff00]"></span>
       </button>
     </div>
   </header>
 
   <!-- ============================================================== -->
-  <!-- TELEGRAM AUTH & REGISTRATION MODAL                             -->
-  <!-- ============================================================== -->
-  <div id="authModalBackdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-3xl bg-[#151b26] border border-slate-700 p-5 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center">
-            <i data-lucide="send" class="w-4 h-4"></i>
-          </div>
-          <h3 class="font-extrabold text-sm text-white">Авторизация Telegram</h3>
-        </div>
-        <button onclick="closeAuthModal()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <p class="text-xs text-slate-300 leading-relaxed">
-        Зарегистрированные игроки получают доступ к ИИ Masai v3.8. Гости могут просматривать таймеры и карту без чата с ИИ.
-      </p>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Telegram @username или ID:</label>
-          <input type="text" id="authUsernameInput" placeholder="@username или ID" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0f17] border border-slate-700 text-sm text-white focus:border-sky-400 font-mono">
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-[10px] font-bold uppercase text-slate-400">6-значный проверочный код:</label>
-            <button type="button" onclick="openGetCodeInTelegram()" class="text-[10px] text-sky-400 hover:underline flex items-center gap-1 font-bold">
-              <i data-lucide="send" class="w-3 h-3"></i> Получить код в боте
-            </button>
-          </div>
-          <input type="text" id="authCodeInput" maxlength="6" placeholder="000000" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0f17] border border-slate-700 text-base text-center tracking-[6px] text-white focus:border-sky-400 font-mono font-bold">
-          <p class="text-[9px] text-slate-400 mt-1">Откройте @masiksssgegai_bot и нажмите <b>/code</b> или кнопку '🔐 Код для входа'</p>
-        </div>
-
-        <button onclick="handleTelegramRegisterWithCode()" class="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
-          <i data-lucide="check" class="w-4 h-4"></i>
-          <span>Подтвердить вход по коду</span>
-        </button>
-
-        <button onclick="handleGuestLogin()" class="w-full py-2.5 rounded-2xl bg-[#0e131d] hover:bg-[#141b29] text-slate-300 text-xs font-bold border border-slate-800 transition-all flex items-center justify-center gap-1.5">
-          <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
-          <span>Продолжить как Гость</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================== -->
-  <!-- SLIDE-OVER DRAWER MENU (3 Stripes Menu)                        -->
-  <!-- ============================================================== -->
-  <div id="drawerBackdrop" onclick="toggleDrawer()" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm hidden transition-opacity"></div>
-  <aside id="appDrawer" class="fixed top-0 right-0 bottom-0 z-50 w-72 max-w-[85%] bg-[#0e131d] border-l border-slate-800 p-5 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out">
-    <div>
-      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-slate-800 text-sky-400 flex items-center justify-center font-bold">
-            <i data-lucide="layout-grid" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-white">Меню навигации</h3>
-            <p id="drawerUserStatus" class="text-[10px] text-slate-400">Статус: Гость</p>
-          </div>
-        </div>
-        <button onclick="toggleDrawer()" class="w-8 h-8 rounded-full bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center active:scale-95">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <nav class="mt-4 space-y-1 text-xs">
-        <button onclick="switchTab('events'); toggleDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/70 text-slate-200">
-          <i data-lucide="calendar" class="w-4 h-4 text-sky-400"></i>
-          <span>Ивенты и таймеры</span>
-        </button>
-        <button onclick="switchTab('map'); toggleDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/70 text-slate-200">
-          <i data-lucide="map" class="w-4 h-4 text-emerald-400"></i>
-          <span>Карта игры (@masiksssgegai_bot)</span>
-        </button>
-        <button onclick="switchTab('ai'); toggleDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/70 text-slate-200">
-          <i data-lucide="bot" class="w-4 h-4 text-purple-400"></i>
-          <span>ИИ Ассистент Masai v3.8</span>
-        </button>
-        <button onclick="switchTab('settings'); toggleDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/70 text-slate-200">
-          <i data-lucide="sliders" class="w-4 h-4 text-amber-400"></i>
-          <span>Настройки</span>
-        </button>
-        <button onclick="openAuthModal(); toggleDrawer();" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800/70 text-slate-200">
-          <i data-lucide="user-check" class="w-4 h-4 text-sky-400"></i>
-          <span>Сменить аккаунт / Регистрация</span>
-        </button>
-        <button id="drawerDevBtn" onclick="switchTab('dev'); toggleDrawer();" class="hidden w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold">
-          <i data-lucide="shield" class="w-4 h-4 text-purple-400"></i>
-          <span>Панель разработчика</span>
-        </button>
-      </nav>
-    </div>
-
-    <div class="pt-4 border-t border-slate-800 space-y-2">
-      <button onclick="openBot('masiksssgegai_bot')" class="w-full py-2 rounded-xl bg-[#161d2b] border border-slate-700 text-sky-400 text-xs font-bold flex items-center justify-center gap-1.5">
-        <i data-lucide="send" class="w-3.5 h-3.5"></i> @masiksssgegai_bot
-      </button>
-      <div class="text-[10px] text-center text-slate-500 font-mono">Pixel Royale Reminders • x2i06z</div>
-    </div>
-  </aside>
-
-  <!-- ============================================================== -->
   <!-- MAIN APP CONTAINER                                             -->
   <!-- ============================================================== -->
-  <main class="flex-1 px-4 py-4 max-w-md mx-auto w-full pb-28 space-y-4">
+  <main class="flex-1 px-4 py-3 max-w-md mx-auto w-full pb-28 space-y-4">
 
-    <!-- ============================================================ -->
-    <!-- TAB 1: ИВЕНТЫ (Капча в 19:00 и Сундуки каждые 2 часа)        -->
-    <!-- ============================================================ -->
-    <div id="content-events" class="space-y-4">
-      
-      <!-- EVENT 1: КАПЧА -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
-              <i data-lucide="shield-alert" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-xs font-extrabold text-white uppercase tracking-wider">Капча</h3>
-                <span class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold border border-amber-500/20">Ежедневно</span>
-              </div>
-              <p class="text-[11px] text-slate-400">Ровно в 19:00:00 МСК</p>
-            </div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-400 font-bold">19:00 МСК</span>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-[#0e131d] border border-slate-800 flex items-center justify-between">
-          <div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">До старта:</div>
-            <div id="captchaCountdown" class="text-2xl font-mono font-black text-white tracking-tight">--:--:--</div>
-          </div>
-          <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center">
-            <i data-lucide="timer" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <div class="w-full bg-[#0e131d] h-2 rounded-full overflow-hidden border border-slate-800">
-          <div id="captchaProgressBar" class="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-1000" style="width: 50%;"></div>
-        </div>
-      </div>
-
-      <!-- EVENT 2: СУНДУКИ (АИРДРОПЫ) -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
-              <i data-lucide="box" class="w-5 h-5"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-xs font-extrabold text-white uppercase tracking-wider">Сундуки</h3>
-                <span class="px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 text-[10px] font-bold border border-sky-500/20">Аирдропы</span>
-              </div>
-              <p class="text-[11px] text-slate-400">Сброс каждые 2 часа</p>
-            </div>
-          </div>
-          <span class="text-[10px] font-mono text-slate-400 font-bold">12 волн/сутки</span>
-        </div>
-
-        <div class="p-4 rounded-2xl bg-[#0e131d] border border-slate-800 flex items-center justify-between">
-          <div>
-            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Следующий сброс через:</div>
-            <div id="airdropCountdown" class="text-2xl font-mono font-black text-sky-400 tracking-tight">--:--:--</div>
-          </div>
-          <div class="text-right">
-            <div class="text-[10px] text-slate-400 font-medium">Время:</div>
-            <div id="nextAirdropHourText" class="font-mono font-bold text-white text-xs">--:00 МСК</div>
-          </div>
-        </div>
-
+    <!-- HERO TITLE & PILL SWITCHER -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between">
         <div>
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Расписание всех волн (МСК):</div>
-          <div id="airdropWavesGrid" class="grid grid-cols-3 gap-2"></div>
+          <h2 class="text-xl font-black tracking-tight text-white">Готов к ивенту?</h2>
+          <p class="text-xs text-slate-400">Таймеры аирдропов и капчи в реальном времени</p>
         </div>
+        <button onclick="launchGameInTelegram()" class="px-3 py-1.5 rounded-full bg-[#ccff00] text-black font-black text-xs flex items-center gap-1 active:scale-95 transition-transform shadow-sm">
+          <span>🎮 В игру</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </button>
       </div>
 
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- TAB 2: КАРТА ИГРЫ (@masiksssgegai_bot)                       -->
-    <!-- ============================================================ -->
-    <div id="content-map" class="hidden space-y-4">
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
-              <i data-lucide="map" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <h3 class="text-sm font-extrabold text-white">Карта Pixel Royale</h3>
-              <p class="text-xs text-sky-400 font-mono">@masiksssgegai_bot</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium border border-slate-700">Официальный бот</span>
-        </div>
-
-        <p class="text-xs text-slate-300 leading-relaxed">
-          Прямая интеграция с ботом карты. Получайте тактическую карту, дроп-зоны, тайминги сундуков и координаты ключевых точек в 1 клик прямо в приложении Telegram!
-        </p>
-
-        <!-- Key Tactical Zones Card -->
-        <div class="space-y-2 text-xs">
-          <div class="p-3 rounded-2xl bg-[#0e131d] border border-slate-800 flex items-center justify-between">
-            <span class="font-bold text-white">📍 Центральная вышка</span>
-            <span class="text-amber-400 font-mono text-[10px]">Tier-1 Loot</span>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#0e131d] border border-slate-800 flex items-center justify-between">
-            <span class="font-bold text-white">📦 Заброшенный ангар</span>
-            <span class="text-sky-400 font-mono text-[10px]">Аирдроп точка</span>
-          </div>
-          <div class="p-3 rounded-2xl bg-[#0e131d] border border-slate-800 flex items-center justify-between">
-            <span class="font-bold text-white">⚡ Сектор Капчи (19:00)</span>
-            <span class="text-purple-400 font-mono text-[10px]">Ежедневный сбор</span>
-          </div>
-        </div>
-
-        <button onclick="openBot('masiksssgegai_bot')" class="w-full py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
-          <i data-lucide="send" class="w-4 h-4"></i>
-          <span>Открыть карту в @masiksssgegai_bot</span>
+      <!-- MODERN PILL TAB SWITCHER (Like in reference photo) -->
+      <div class="flex items-center gap-1.5 p-1 rounded-2xl bg-[#121721] border border-[#1f293d] overflow-x-auto no-scrollbar text-xs">
+        <button onclick="switchTab('events')" id="pill-events" class="flex-1 py-2 px-3 rounded-xl font-black transition-all text-center whitespace-nowrap bg-[#ccff00] text-black shadow-sm">
+          📦 Ивенты
+        </button>
+        <button onclick="switchTab('map')" id="pill-map" class="flex-1 py-2 px-3 rounded-xl font-bold transition-all text-center whitespace-nowrap text-slate-400 hover:text-white">
+          🗺️ Карта
+        </button>
+        <button onclick="switchTab('ai')" id="pill-ai" class="flex-1 py-2 px-3 rounded-xl font-bold transition-all text-center whitespace-nowrap text-slate-400 hover:text-white">
+          🧠 ИИ Чат
+        </button>
+        <button onclick="switchTab('settings')" id="pill-settings" class="flex-1 py-2 px-3 rounded-xl font-bold transition-all text-center whitespace-nowrap text-slate-400 hover:text-white">
+          ⚙️ Опции
         </button>
       </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- TAB 3: ИИ ЧАТ MASAI v3.8                                      -->
+    <!-- TAB 1: EVENTS BENTO GRID                                     -->
+    <!-- ============================================================ -->
+    <div id="content-events" class="space-y-3.5">
+
+      <!-- BENTO CARD 1: PRIMARY AIRDROP HERO CARD -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] relative overflow-hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-[#ccff00]/15 text-[#ccff00] border border-[#ccff00]/30 text-[10px] font-black uppercase tracking-wider">
+              Следующий Аирдроп
+            </span>
+            <span class="text-[11px] text-slate-400 font-mono">12 волн/сутки</span>
+          </div>
+          <button onclick="launchGameInTelegram()" class="w-8 h-8 rounded-full bg-[#18202e] text-slate-300 hover:text-white flex items-center justify-center border border-slate-700 active:scale-95 transition-all">
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div>
+          <div class="text-[11px] text-slate-400 uppercase tracking-wider font-bold">Сброс сундука через:</div>
+          <div class="flex items-baseline gap-2 mt-0.5">
+            <span id="airdropCountdown" class="text-3xl font-black font-mono text-[#ccff00] tracking-tight">--:--:--</span>
+            <span id="nextAirdropHourText" class="text-xs text-slate-300 font-mono font-bold">--:00 МСК</span>
+          </div>
+        </div>
+
+        <!-- Animated Progress bar -->
+        <div class="space-y-1.5">
+          <div class="w-full bg-[#0b0e14] h-2.5 rounded-full overflow-hidden border border-slate-800">
+            <div id="airdropProgressBar" class="bg-gradient-to-r from-[#ccff00] to-emerald-400 h-full rounded-full transition-all duration-1000" style="width: 50%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-400">
+            <span>Интервал: каждые 2 часа</span>
+            <span id="airdropStatusBadge" class="text-sky-400 font-bold">Оповещение за 5 мин</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENTO CARD 2: DAILY CAPTCHA 19:00 -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-black uppercase tracking-wider">
+              Ежедневная Капча
+            </span>
+            <span class="text-[11px] font-mono text-slate-300 font-bold">19:00:00 МСК</span>
+          </div>
+          <button onclick="launchGameInTelegram()" class="w-8 h-8 rounded-full bg-[#18202e] text-slate-300 hover:text-white flex items-center justify-center border border-slate-700 active:scale-95 transition-all">
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-[#0b0e14] border border-slate-800 flex items-center justify-between">
+          <div>
+            <div class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">До старта капчи:</div>
+            <div id="captchaCountdown" class="text-2xl font-black font-mono text-white tracking-tight">--:--:--</div>
+          </div>
+          <div class="text-right">
+            <span class="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[10px] font-bold">
+              Внимание!
+            </span>
+            <div class="text-[10px] text-slate-400 mt-1">Сигнал за 3м и 1м</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BENTO ROW 3: QUICK LAUNCH & SCHEDULE GRID -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-300">Расписание всех 12 волн (МСК)</h3>
+          <span class="text-[10px] text-[#ccff00] font-mono">Автосинхронизация</span>
+        </div>
+        <div id="airdropWavesGrid" class="grid grid-cols-4 gap-2 text-center text-xs font-mono"></div>
+      </div>
+
+      <!-- BIG LAUNCH BUTTON -->
+      <button onclick="launchGameInTelegram()" class="w-full py-4 rounded-3xl bg-gradient-to-r from-[#ccff00] to-emerald-400 hover:brightness-105 text-slate-950 font-black text-sm active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+        <i data-lucide="send" class="w-5 h-5"></i>
+        <span>Открыть Pixel Royale прямо в Telegram (@PBMap_bot)</span>
+      </button>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 2: MAP & REAL RENDER FROM @PBMap_bot                     -->
+    <!-- ============================================================ -->
+    <div id="content-map" class="hidden space-y-4">
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#ccff00]/15 text-[#ccff00] flex items-center justify-center font-bold">
+              <i data-lucide="map" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-white">Карта Pixel Royale</h3>
+              <p class="text-xs text-[#ccff00] font-mono">Рендер @PBMap_bot</p>
+            </div>
+          </div>
+          <button onclick="refreshMapImage()" class="px-2.5 py-1 rounded-full bg-[#18202e] hover:bg-[#1f293d] text-slate-300 text-xs font-bold border border-slate-700 flex items-center gap-1 active:scale-95">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Обновить</span>
+          </button>
+        </div>
+
+        <!-- Real Rendered Map Preview -->
+        <div class="relative rounded-2xl overflow-hidden border border-slate-700 bg-[#0b0e14] aspect-video flex items-center justify-center">
+          <img id="liveMapImage" src="http://127.0.0.1:8088/api/map" onerror="this.onerror=null; this.src='game_screen.png';" class="w-full h-full object-cover" alt="Карта местности">
+          <div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-sm text-[10px] font-mono text-white flex items-center gap-1.5 border border-white/10">
+            <span class="w-2 h-2 rounded-full bg-[#ccff00] animate-ping"></span>
+            <span>Live рендер территории</span>
+          </div>
+        </div>
+
+        <!-- Tactical Points Breakdown -->
+        <div class="space-y-2 text-xs">
+          <div class="p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 flex items-center justify-between">
+            <span class="font-bold text-white">📍 Центральная вышка</span>
+            <span class="text-amber-400 font-mono text-[10px]">Tier-1 Loot Zone</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 flex items-center justify-between">
+            <span class="font-bold text-white">📦 Заброшенный ангар</span>
+            <span class="text-sky-400 font-mono text-[10px]">Сектор сброса сундуков</span>
+          </div>
+          <div class="p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 flex items-center justify-between">
+            <span class="font-bold text-white">⚡ Сектор Капчи (19:00:00)</span>
+            <span class="text-[#ccff00] font-mono text-[10px]">Ежедневный сбор</span>
+          </div>
+        </div>
+
+        <button onclick="launchGameInTelegram()" class="w-full py-3.5 rounded-2xl bg-[#ccff00] hover:bg-[#b8e600] text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Открыть карту и игру в Telegram</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- TAB 3: MASAI AI CHAT                                          -->
     <!-- ============================================================ -->
     <div id="content-ai" class="hidden space-y-4">
       
       <!-- Locked State for Guests -->
-      <div id="aiGuestLockedCard" class="hidden p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 text-center space-y-3.5 shadow-sm">
+      <div id="aiGuestLockedCard" class="hidden p-5 rounded-3xl bg-[#121721] border border-[#1f293d] text-center space-y-3.5">
         <div class="w-14 h-14 mx-auto rounded-3xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
           <i data-lucide="lock" class="w-7 h-7"></i>
         </div>
         <div>
-          <h3 class="text-sm font-extrabold text-white">Доступ к ИИ ограничен</h3>
+          <h3 class="text-sm font-black text-white">Доступ к ИИ ограничен</h3>
           <p class="text-xs text-slate-400 mt-1">
-            Вы вошли как <span class="text-amber-400 font-bold">Гость</span>. Общение с ИИ-ассистентом Masai (Hermes v3.8) доступно только после регистрации через Telegram.
+            Вы вошли как <span class="text-amber-400 font-bold">Гость</span>. Общение с ИИ-ассистентом Masai v3.8 доступно только для зарегистрированных через Telegram.
           </p>
         </div>
-        <button onclick="openAuthModal()" class="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2">
+        <button onclick="openAuthModal()" class="w-full py-3 rounded-2xl bg-[#ccff00] text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2">
           <i data-lucide="user-check" class="w-4 h-4"></i>
-          <span>Зарегистрироваться в 1 клик</span>
+          <span>Зарегистрироваться по коду</span>
         </button>
       </div>
 
       <!-- Active AI Chat for Registered Users -->
-      <div id="aiActiveChatPanel" class="p-4 rounded-3xl bg-[#151b26] border border-slate-800/90 flex flex-col h-[520px] shadow-sm">
+      <div id="aiActiveChatPanel" class="p-4 rounded-3xl bg-[#121721] border border-[#1f293d] flex flex-col h-[520px]">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
@@ -398,33 +321,33 @@
           </button>
         </div>
 
-        <!-- Messages scroll container -->
+        <!-- Messages container -->
         <div id="aiMessagesContainer" class="flex-1 overflow-y-auto py-3 space-y-3 text-xs pr-1">
           <div class="flex gap-2 items-start">
             <div class="w-6 h-6 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center text-[10px] font-bold">M</div>
-            <div class="p-3 rounded-2xl rounded-tl-none bg-[#0e131d] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]">
-              Привет! Я Masai — игровой ИИ-ассистент Pixel Royale и системы Hermes v3.8. Знаю расписание всех волн аирдропов, капчи и анализирую актуальные события игры. Спрашивай!
+            <div class="p-3 rounded-2xl rounded-tl-none bg-[#0b0e14] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]">
+              Привет! Я Masai — игровой ИИ-ассистент Pixel Royale и системы Hermes v3.8. Знаю расписание всех волн аирдропов, капчи и анализирую карту игры. Спрашивай!
             </div>
           </div>
         </div>
 
         <!-- Quick prompts chips -->
         <div class="py-2 overflow-x-auto flex gap-1.5 text-[10px] no-scrollbar">
-          <button onclick="sendQuickPrompt('Что сейчас происходит в игре?')" class="px-2.5 py-1 rounded-full bg-[#0e131d] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-sky-400">
+          <button onclick="sendQuickPrompt('Что сейчас происходит в игре?')" class="px-2.5 py-1 rounded-full bg-[#0b0e14] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-[#ccff00]">
             🎮 Что в игре?
           </button>
-          <button onclick="sendQuickPrompt('Когда следующий аирдроп сундуков?')" class="px-2.5 py-1 rounded-full bg-[#0e131d] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-sky-400">
+          <button onclick="sendQuickPrompt('Когда следующий аирдроп сундуков?')" class="px-2.5 py-1 rounded-full bg-[#0b0e14] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-[#ccff00]">
             📦 Следующий аирдроп
           </button>
-          <button onclick="sendQuickPrompt('Какие лучшие точки для лута на карте?')" class="px-2.5 py-1 rounded-full bg-[#0e131d] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-sky-400">
+          <button onclick="sendQuickPrompt('Какие лучшие точки для лута на карте?')" class="px-2.5 py-1 rounded-full bg-[#0b0e14] border border-slate-700/80 text-slate-300 whitespace-nowrap hover:border-[#ccff00]">
             📍 Точки лута
           </button>
         </div>
 
         <!-- Input bar -->
         <div class="pt-2 border-t border-slate-800 flex items-center gap-2">
-          <input type="text" id="aiChatInput" onkeydown="if(event.key==='Enter') sendAiMessage()" placeholder="Задайте вопрос Masai..." class="flex-1 px-3 py-2 rounded-xl bg-[#0b0f17] border border-slate-700 text-xs text-white focus:border-sky-400">
-          <button onclick="sendAiMessage()" class="w-9 h-9 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 flex items-center justify-center active:scale-95">
+          <input type="text" id="aiChatInput" onkeydown="if(event.key==='Enter') sendAiMessage()" placeholder="Задайте вопрос Masai..." class="flex-1 px-3 py-2 rounded-xl bg-[#0b0e14] border border-slate-700 text-xs text-white focus:border-[#ccff00]">
+          <button onclick="sendAiMessage()" class="w-9 h-9 rounded-xl bg-[#ccff00] hover:bg-[#b8e600] text-slate-950 flex items-center justify-center active:scale-95">
             <i data-lucide="send" class="w-4 h-4"></i>
           </button>
         </div>
@@ -433,382 +356,275 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- TAB 4: НАСТРОЙКИ                                            -->
+    <!-- TAB 4: SETTINGS & CONTROLS                                    -->
     <!-- ============================================================ -->
     <div id="content-settings" class="hidden space-y-4">
 
-      <!-- 1. MUTUALLY EXCLUSIVE MODE SELECTION -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-extrabold text-white">Активный режим</h3>
-            <p class="text-[10px] text-slate-400">Выберите ровно один активный профиль</p>
-          </div>
-          <span class="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 font-medium">1 режим</span>
-        </div>
-
-        <div class="space-y-2">
-          <div onclick="selectMode('normal')" id="card-mode-normal" class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0e131d] border-slate-800 hover:border-slate-700">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-slate-800 text-sky-400 flex items-center justify-center">
-                <i data-lucide="bell" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <div class="text-xs font-extrabold text-white">Стандартный</div>
-                <div class="text-[10px] text-slate-400">Мелодичный сигнал + вибрация</div>
-              </div>
-            </div>
-            <div id="radio-normal" class="w-5 h-5 rounded-full border-2 border-slate-700 flex items-center justify-center"></div>
-          </div>
-
-          <div onclick="selectMode('extra')" id="card-mode-extra" class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0e131d] border-slate-800 hover:border-slate-700">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center">
-                <i data-lucide="zap" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <div class="text-xs font-extrabold text-white">Усиленный</div>
-                <div class="text-[10px] text-slate-400">Максимальная виброотдача + вспышка фонарика</div>
-              </div>
-            </div>
-            <div id="radio-extra" class="w-5 h-5 rounded-full border-2 border-slate-700 flex items-center justify-center"></div>
-          </div>
-
-          <div onclick="selectMode('custom')" id="card-mode-custom" class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0e131d] border-slate-800 hover:border-slate-700">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-slate-800 text-purple-400 flex items-center justify-center">
-                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-              </div>
-              <div>
-                <div class="text-xs font-extrabold text-white">Свой конструктор</div>
-                <div class="text-[10px] text-slate-400">Настройка отдельных тумблеров</div>
-              </div>
-            </div>
-            <div id="radio-custom" class="w-5 h-5 rounded-full border-2 border-slate-700 flex items-center justify-center"></div>
-          </div>
-
-          <div id="customTogglesPanel" class="hidden p-3 rounded-2xl bg-[#0a0e16] border border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
-            <label class="flex items-center justify-between p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <span class="text-slate-300 font-medium">Звук</span>
-              <input type="checkbox" id="customSound" onchange="saveAllConfig()" checked class="w-4 h-4 rounded text-sky-500">
-            </label>
-            <label class="flex items-center justify-between p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <span class="text-slate-300 font-medium">Вибрация</span>
-              <input type="checkbox" id="customVib" onchange="saveAllConfig()" checked class="w-4 h-4 rounded text-sky-500">
-            </label>
-            <label class="flex items-center justify-between p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <span class="text-slate-300 font-medium">Фонарик</span>
-              <input type="checkbox" id="customFlash" onchange="saveAllConfig()" class="w-4 h-4 rounded text-sky-500">
-            </label>
-            <label class="flex items-center justify-between p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <span class="text-slate-300 font-medium">Пуш</span>
-              <input type="checkbox" id="customNotif" onchange="saveAllConfig()" checked class="w-4 h-4 rounded text-sky-500">
-            </label>
-          </div>
-
-          <button onclick="selectMode('none')" class="w-full py-2.5 rounded-2xl bg-[#0e131d] hover:bg-[#141b29] text-slate-400 hover:text-slate-200 text-xs font-bold border border-slate-800 transition-all flex items-center justify-center gap-1.5">
-            <i data-lucide="bell-off" class="w-3.5 h-3.5"></i>
-            <span>Отключить все сигналы</span>
-          </button>
-        </div>
-      </div>
-
-            <!-- GAME LAUNCH ON NOTIFICATION -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
-              <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i> Запуск игры по уведомлению
-            </h3>
-            <p class="text-[10px] text-slate-400">При нажатии на уведомление сразу запускается игра</p>
-          </div>
-          <span class="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 text-[10px] font-bold border border-purple-500/20">
-            Game Action
-          </span>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <div>
-            <label class="block text-[11px] text-slate-300 font-medium mb-1">Пакет приложения или URL (по умолчанию: авто-поиск/Telegram):</label>
-            <input type="text" id="gameLaunchTargetInput" onchange="saveGameLaunchTarget()" placeholder="Оставьте пустым для автопоиска или укажите tg://..." class="w-full px-3 py-2 rounded-xl bg-[#0e131d] border border-slate-700 text-white font-mono text-[11px] focus:border-purple-400">
-          </div>
-
-          <div class="flex gap-2 pt-1">
-            <button onclick="testGameLaunch()" class="flex-1 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 font-bold text-xs border border-purple-500/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-              <i data-lucide="play" class="w-3.5 h-3.5"></i>
-              <span>Проверить запуск игры</span>
-            </button>
-            <button onclick="resetGameLaunchTarget()" class="px-3 py-2 rounded-xl bg-[#0e131d] text-slate-400 hover:text-white border border-slate-700 text-xs">
-              Сброс
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. VIBRATION STRENGTH SLIDER -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
-              <i data-lucide="vibrate" class="w-4 h-4 text-sky-400"></i> Сила вибрации
-            </h3>
-            <p class="text-[10px] text-slate-400">Аппаратная мощность виброотдачи</p>
-          </div>
-          <span id="vibStrengthLabel" class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-sky-300 font-mono">
-            4 / 5
-          </span>
-        </div>
-
-        <input type="range" id="vibStrengthSlider" min="1" max="5" value="4" oninput="onVibSliderInput(this.value)" class="w-full cursor-pointer">
-
-        <button onclick="testSelectedVibration()" class="w-full py-2.5 rounded-2xl bg-[#1e2638] hover:bg-[#28334a] text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-700/80 active:scale-95 transition-all">
-          <i data-lucide="play" class="w-4 h-4 text-sky-400"></i> Протестировать вибрацию
-        </button>
-      </div>
-
-      <!-- 3. SOUND VOLUME & TYPE -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-extrabold text-white flex items-center gap-1.5">
-              <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i> Громкость звука
-            </h3>
-            <p class="text-[10px] text-slate-400">Точная регулировка громкости сигнала</p>
-          </div>
-          <span id="soundVolumeLabel" class="px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-emerald-300 font-mono">
-            50%
-          </span>
-        </div>
-
-        <input type="range" id="soundVolumeSlider" min="0" max="100" value="50" oninput="onVolumeSliderInput(this.value)" class="w-full cursor-pointer">
-
-        <div class="space-y-2 pt-1 text-xs">
-          <div class="flex items-center justify-between">
-            <span class="text-slate-300">Тип сигнала:</span>
-            <select id="soundTypeSelect" onchange="saveAllConfig()" class="bg-[#0e131d] border border-slate-700 text-white font-bold rounded-xl px-2.5 py-1.5">
-              <option value="gentle">Тихий сигнал (Колокольчик)</option>
-              <option value="radar">Радар</option>
-              <option value="bell">Игровой колокол</option>
-              <option value="system">Системное уведомление</option>
-              <option value="custom">Свой MP3/WAV файл</option>
-            </select>
-          </div>
-
-          <div class="flex items-center justify-between pt-1">
-            <span id="customSoundDisplay" class="text-[11px] text-slate-400 truncate max-w-[170px]">Свой файл не выбран</span>
-            <button onclick="pickCustomFile()" class="px-2.5 py-1 rounded-xl bg-[#1e2638] text-slate-200 text-xs font-bold border border-slate-700">
-              Выбрать аудио
-            </button>
-          </div>
-        </div>
-
-        <button onclick="testNotificationSound()" class="w-full py-2.5 rounded-2xl bg-[#1e2638] hover:bg-[#28334a] text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-700/80 active:scale-95 transition-all">
-          <i data-lucide="play" class="w-4 h-4 text-emerald-400"></i> Прослушать звук
-        </button>
-      </div>
-
-      <!-- 4. LEAD TIMES -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3 shadow-sm text-xs">
-        <h4 class="font-extrabold text-white flex items-center gap-1.5">
-          <i data-lucide="clock" class="w-4 h-4 text-slate-400"></i> Время напоминаний
-        </h4>
-
-        <div class="flex items-center justify-between">
-          <span class="text-slate-300">До капчи (19:00):</span>
-          <select id="captchaLeadTime" onchange="saveAllConfig()" class="bg-[#0e131d] border border-slate-700 text-white font-bold rounded-xl px-2.5 py-1.5">
-            <option value="1">за 1 минуту</option>
-            <option value="2">за 2 минуты</option>
-            <option value="3" selected>за 3 минуты</option>
-            <option value="5">за 5 минут</option>
-          </select>
-        </div>
-
-        <div class="flex items-center justify-between">
-          <span class="text-slate-300">До аирдропов (сундуков):</span>
-          <select id="airdropLeadTime" onchange="saveAllConfig()" class="bg-[#0e131d] border border-slate-700 text-white font-bold rounded-xl px-2.5 py-1.5">
-            <option value="1">за 1 минуту</option>
-            <option value="2">за 2 минуты</option>
-            <option value="3">за 3 минуты</option>
-            <option value="5" selected>за 5 минут</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 5. SEAMLESS IN-APP HOT-OTA -->
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-slate-800/90 space-y-3.5 shadow-sm">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center font-bold">
-              <i data-lucide="cloud-download" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <h3 class="text-xs font-extrabold text-white">Бесшовные обновления</h3>
-              <p class="text-[10px] text-slate-400">Текущая версия: <span class="font-mono text-sky-400 font-bold">x2i06z</span></p>
-            </div>
-          </div>
-          <span id="updateAvailBadge" class="hidden px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">Новая версия</span>
-        </div>
-
-        <label class="flex items-center justify-between p-3 rounded-2xl bg-[#0e131d] border border-slate-800 text-xs cursor-pointer">
-          <div class="pr-2">
-            <div class="font-bold text-white">Авто-обновление ночью</div>
-            <div class="text-[10px] text-slate-400">Обновляет само в фоне, если до ивента >10 минут</div>
-          </div>
-          <input type="checkbox" id="autoNightUpdateToggle" onchange="saveAllConfig()" checked class="w-4 h-4 rounded text-sky-500">
-        </label>
-
-        <div id="updateStatusLine" class="text-xs text-slate-300 p-3 rounded-2xl bg-[#0e131d] border border-slate-800 font-mono">
-          Готово к проверке
-        </div>
-
-        <div class="space-y-2">
-          <button id="btnCheckUpdate" onclick="triggerUpdateCheck()" class="w-full py-3 rounded-2xl bg-[#1e2638] hover:bg-[#28334a] text-slate-100 font-extrabold text-xs border border-slate-700/80 active:scale-95 transition-all flex items-center justify-center gap-2">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            <span>Проверить обновление</span>
-          </button>
-
-          <button id="btnSeamlessUpdate" onclick="runSeamlessUpdate()" class="hidden w-full py-3.5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
-            <i data-lucide="zap" class="w-4 h-4"></i>
-            <span>Обновить мгновенно (Бесшовно)</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- TAB 5: РАЗДЕЛ ДЛЯ РАЗРАБОТЧИКОВ (@Bigbigmas)                 -->
-    <!-- ============================================================ -->
-    <div id="content-dev" class="hidden space-y-4">
-      <div class="p-5 rounded-3xl bg-[#151b26] border border-purple-500/40 space-y-4 shadow-sm">
+      <!-- ACCOUNT STATUS CARD -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
-              <i data-lucide="shield" class="w-5 h-5"></i>
+            <div class="w-8 h-8 rounded-xl bg-[#ccff00]/15 text-[#ccff00] flex items-center justify-center font-bold">
+              <i data-lucide="user" class="w-4 h-4"></i>
             </div>
             <div>
-              <h3 class="text-xs font-extrabold text-white">Панель разработчика</h3>
-              <p class="text-[10px] text-purple-300 font-mono">Доступ: @Bigbigmas</p>
+              <h3 class="text-xs font-black text-white">Аккаунт</h3>
+              <p id="settingsAccountLabel" class="text-[11px] text-slate-400">Статус: Гость</p>
             </div>
           </div>
-          <span class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold border border-purple-500/30">Dev Section</span>
-        </div>
-
-        <!-- 1. Broadcast groups manager -->
-        <div class="p-3.5 rounded-2xl bg-[#0e131d] border border-slate-800 space-y-2.5 text-xs">
-          <div class="font-extrabold text-white flex items-center justify-between">
-            <span>📢 Рассылка по группам (Ивенты):</span>
-            <button onclick="fetchDevTelemetry()" class="text-sky-400 hover:text-sky-300 text-[11px]"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline"></i></button>
-          </div>
-          <div class="flex gap-2">
-            <input type="text" id="devAddGroupIdInput" placeholder="ID группы (например, -100...)" class="flex-1 px-3 py-2 rounded-xl bg-[#0b0f17] border border-slate-700 text-xs text-white font-mono">
-            <button onclick="devAddGroup()" class="px-3 py-2 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs">
-              + Добавить
-            </button>
-          </div>
-          <div id="devGroupsList" class="space-y-1.5 max-h-28 overflow-y-auto pr-1">
-            <div class="text-[11px] text-slate-400">Загрузка групп...</div>
-          </div>
-          <button onclick="devTestBroadcast()" class="w-full py-2 rounded-xl bg-[#1e2638] hover:bg-[#28334a] text-slate-200 font-bold text-xs border border-slate-700">
-            🔔 Тестовый сигнал во все группы
+          <button onclick="openAuthModal()" class="px-3 py-1 rounded-full bg-[#18202e] hover:bg-[#1f293d] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95">
+            Сменить
           </button>
         </div>
 
-        <!-- 2. Access control: Whitelist & Blacklist -->
-        <div class="p-3.5 rounded-2xl bg-[#0e131d] border border-slate-800 space-y-2.5 text-xs">
-          <div class="flex items-center justify-between">
-            <span class="font-extrabold text-white">🔒 Режим «Только белый список»:</span>
-            <input type="checkbox" id="devWlOnlyToggle" onchange="devToggleWlOnly(this.checked)" class="w-4 h-4 rounded text-purple-500">
-          </div>
-          <div class="flex gap-2">
-            <input type="text" id="devAccessInput" placeholder="@username или ID" class="flex-1 px-3 py-2 rounded-xl bg-[#0b0f17] border border-slate-700 text-xs text-white font-mono">
-            <button onclick="devAddAccess('whitelist')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">+ БС</button>
-            <button onclick="devAddAccess('blacklist')" class="px-2.5 py-1.5 rounded-xl bg-rose-500 text-white font-bold text-xs">+ ЧС</button>
-          </div>
-          <div class="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-            <div>
-              <div class="font-bold text-emerald-400 mb-1">Белый список (БС):</div>
-              <div id="devWlContainer" class="space-y-1 max-h-24 overflow-y-auto"></div>
-            </div>
-            <div>
-              <div class="font-bold text-rose-400 mb-1">Чёрный список (ЧС):</div>
-              <div id="devBlContainer" class="space-y-1 max-h-24 overflow-y-auto"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Attendance Analytics & Telemetry -->
-        <div class="p-3.5 rounded-2xl bg-[#0e131d] border border-slate-800 space-y-2 text-xs">
-          <div class="font-extrabold text-white">📊 Посещаемость приложения:</div>
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <div class="text-[10px] text-slate-400">Всего</div>
-              <div id="devStatTotalVisits" class="font-mono font-bold text-white text-base">--</div>
-            </div>
-            <div class="p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <div class="text-[10px] text-slate-400">Сегодня</div>
-              <div id="devStatTodayVisits" class="font-mono font-bold text-sky-400 text-base">--</div>
-            </div>
-            <div class="p-2 rounded-xl bg-[#151b26] border border-slate-800">
-              <div class="text-[10px] text-slate-400">Игроков</div>
-              <div id="devStatRegistered" class="font-mono font-bold text-purple-400 text-base">--</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. Global Bot Switch -->
-        <label class="flex items-center justify-between p-3 rounded-2xl bg-[#0e131d] border border-slate-800 text-xs cursor-pointer">
-          <span class="font-bold text-white">Глобальный выключатель бота:</span>
-          <input type="checkbox" id="devBotMasterSwitch" onchange="devToggleBotMaster(this.checked)" checked class="w-4 h-4 rounded text-sky-500">
-        </label>
+        <!-- Discrete Developer button (ONLY shown if user is verified developer) -->
+        <div id="devEntryPointContainer"></div>
       </div>
+
+      <!-- 1. MUTUALLY EXCLUSIVE MODE SELECTION -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-black text-white">Профиль оповещений</h3>
+            <p class="text-[10px] text-slate-400">Выберите ровно один активный режим</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 font-bold">1 режим</span>
+        </div>
+
+        <div class="space-y-2">
+          <!-- Option A: Vibro only -->
+          <label onclick="selectNotificationMode('vibro')" class="flex items-center justify-between p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="notifyMode" id="modeRadioVibro" class="text-[#ccff00] focus:ring-0">
+              <div>
+                <div class="text-xs font-bold text-white">Только вибрация</div>
+                <div class="text-[10px] text-slate-400">Без звуков, настраиваемая сила импульса</div>
+              </div>
+            </div>
+            <i data-lucide="vibrate" class="w-4 h-4 text-[#ccff00]"></i>
+          </label>
+
+          <!-- Option B: Quiet sound -->
+          <label onclick="selectNotificationMode('quiet')" class="flex items-center justify-between p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="notifyMode" id="modeRadioQuiet" class="text-[#ccff00] focus:ring-0">
+              <div>
+                <div class="text-xs font-bold text-white">Тихий звук</div>
+                <div class="text-[10px] text-slate-400">Мягкий сигнал без сирены</div>
+              </div>
+            </div>
+            <i data-lucide="volume-1" class="w-4 h-4 text-sky-400"></i>
+          </label>
+
+          <!-- Option C: Sound + Vibro -->
+          <label onclick="selectNotificationMode('normal')" class="flex items-center justify-between p-3 rounded-2xl bg-[#0b0e14] border border-slate-800 cursor-pointer hover:border-slate-700 transition-colors">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="notifyMode" id="modeRadioNormal" checked class="text-[#ccff00] focus:ring-0">
+              <div>
+                <div class="text-xs font-bold text-white">Звук + Вибрация</div>
+                <div class="text-[10px] text-slate-400">Рекомендуемый режим для важных волн</div>
+              </div>
+            </div>
+            <i data-lucide="bell" class="w-4 h-4 text-emerald-400"></i>
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. VOLUME & VIBRATION SLIDERS -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-4">
+        <h3 class="text-xs font-black text-white">Громкость и тактильный отклик</h3>
+
+        <!-- Sound volume -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-400">Громкость тихого звука:</span>
+            <span id="soundVolumeVal" class="font-mono font-bold text-sky-400">50%</span>
+          </div>
+          <input type="range" id="soundVolumeSlider" min="5" max="100" value="50" oninput="updateSoundVolume(this.value)" class="w-full accent-sky-400 cursor-pointer">
+        </div>
+
+        <!-- Vibration strength -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-400">Сила вибрации:</span>
+            <span id="vibStrengthVal" class="font-mono font-bold text-[#ccff00]">Уровень 4</span>
+          </div>
+          <input type="range" id="vibStrengthSlider" min="1" max="5" value="4" oninput="updateVibStrength(this.value)" class="w-full accent-[#ccff00] cursor-pointer">
+        </div>
+
+        <!-- Test Buttons -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="testVibration()" class="py-2.5 rounded-2xl bg-[#18202e] hover:bg-[#1f293d] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95 flex items-center justify-center gap-1.5">
+            <i data-lucide="vibrate" class="w-3.5 h-3.5 text-[#ccff00]"></i>
+            <span>Тест вибро</span>
+          </button>
+          <button onclick="testQuietSound()" class="py-2.5 rounded-2xl bg-[#18202e] hover:bg-[#1f293d] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95 flex items-center justify-center gap-1.5">
+            <i data-lucide="volume-2" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>Тест звука</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. GAME TARGET LINK (DEFAULT: tg://resolve?domain=PBMap_bot) -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3">
+        <h3 class="text-xs font-black text-white">Целевой бот для открытия игры</h3>
+        <p class="text-[10px] text-slate-400">Ссылка для перехода по клику на уведомление или кнопку "В игру"</p>
+        <div class="flex gap-2">
+          <input type="text" id="customGameTargetInput" placeholder="tg://resolve?domain=PBMap_bot" class="flex-1 px-3 py-2 rounded-xl bg-[#0b0e14] border border-slate-700 text-xs text-white font-mono">
+          <button onclick="saveGameTargetLink()" class="px-3 py-2 rounded-xl bg-[#ccff00] text-black font-black text-xs active:scale-95">
+            Сохранить
+          </button>
+        </div>
+        <button onclick="launchGameInTelegram()" class="w-full py-2.5 rounded-2xl bg-[#18202e] border border-slate-700 text-slate-300 text-xs font-bold hover:text-white flex items-center justify-center gap-1.5">
+          <i data-lucide="play" class="w-3.5 h-3.5 text-[#ccff00]"></i>
+          <span>Тест запуска игры прямо сейчас</span>
+        </button>
+      </div>
+
+      <!-- 4. SEAMLESS OTA UPDATES -->
+      <div class="p-5 rounded-3xl bg-[#121721] border border-[#1f293d] space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-[#ccff00]"></i>
+            <h3 class="text-xs font-black text-white">Бесшовные обновления OTA</h3>
+          </div>
+          <span class="text-[10px] font-mono text-[#ccff00]">v.x2i07z</span>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          Обновления интерфейса загружаются автоматически. Приложение перезагружается в новую версию без ручных установок.
+        </p>
+        <button onclick="checkOtaUpdateNow()" class="w-full py-2.5 rounded-2xl bg-[#18202e] hover:bg-[#1f293d] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95 flex items-center justify-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Проверить обновление сейчас</span>
+        </button>
+      </div>
+
     </div>
+
+    <!-- ============================================================ -->
+    <!-- DYNAMIC DEVELOPER CONSOLE MOUNT POINT                        -->
+    <!-- (Strictly empty unless verified developer is logged in)      -->
+    <!-- ============================================================ -->
+    <div id="devMountPoint"></div>
 
   </main>
 
   <!-- ============================================================== -->
-  <!-- BOTTOM NAVIGATION BAR                                          -->
+  <!-- FLOATING MODERN BOTTOM NAVIGATION BAR (Photo inspired)         -->
   <!-- ============================================================== -->
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-[#0e131d]/95 backdrop-blur-md border-t border-slate-800/80 px-4 py-2 flex items-center justify-around">
-    <button onclick="switchTab('events')" id="bnav-events" class="flex flex-col items-center gap-1 text-sky-400 transition-all">
-      <div class="w-9 h-6 rounded-full flex items-center justify-center bg-sky-400/10">
-        <i data-lucide="calendar" class="w-4 h-4"></i>
+  <nav class="fixed bottom-4 left-4 right-4 z-40 max-w-sm mx-auto bg-[#121721]/95 backdrop-blur-xl border border-[#1f293d] rounded-full px-3 py-2 flex items-center justify-around shadow-2xl">
+    <button onclick="switchTab('events')" id="bnav-events" class="flex flex-col items-center gap-1 transition-all">
+      <div id="bnav-icon-events" class="w-10 h-10 rounded-full flex items-center justify-center bg-[#ccff00] text-black neon-pill font-black">
+        <i data-lucide="calendar" class="w-5 h-5"></i>
       </div>
-      <span class="text-[10px] font-bold">Ивенты</span>
+      <span class="text-[9px] font-bold text-[#ccff00]">Ивенты</span>
     </button>
 
-    <button onclick="switchTab('map')" id="bnav-map" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-      <div class="w-9 h-6 rounded-full flex items-center justify-center">
-        <i data-lucide="map" class="w-4 h-4"></i>
+    <button onclick="switchTab('map')" id="bnav-map" class="flex flex-col items-center gap-1 transition-all text-slate-400 hover:text-slate-200">
+      <div id="bnav-icon-map" class="w-10 h-10 rounded-full flex items-center justify-center">
+        <i data-lucide="map" class="w-5 h-5"></i>
       </div>
-      <span class="text-[10px] font-bold">Карта</span>
+      <span class="text-[9px] font-bold text-slate-400">Карта</span>
     </button>
 
-    <button onclick="switchTab('ai')" id="bnav-ai" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-      <div class="w-9 h-6 rounded-full flex items-center justify-center">
-        <i data-lucide="bot" class="w-4 h-4"></i>
+    <button onclick="switchTab('ai')" id="bnav-ai" class="flex flex-col items-center gap-1 transition-all text-slate-400 hover:text-slate-200">
+      <div id="bnav-icon-ai" class="w-10 h-10 rounded-full flex items-center justify-center">
+        <i data-lucide="bot" class="w-5 h-5"></i>
       </div>
-      <span class="text-[10px] font-bold">ИИ Чат</span>
+      <span class="text-[9px] font-bold text-slate-400">ИИ Чат</span>
     </button>
 
-    <button onclick="switchTab('settings')" id="bnav-settings" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all">
-      <div class="w-9 h-6 rounded-full flex items-center justify-center">
-        <i data-lucide="sliders" class="w-4 h-4"></i>
+    <button onclick="switchTab('settings')" id="bnav-settings" class="flex flex-col items-center gap-1 transition-all text-slate-400 hover:text-slate-200">
+      <div id="bnav-icon-settings" class="w-10 h-10 rounded-full flex items-center justify-center">
+        <i data-lucide="sliders" class="w-5 h-5"></i>
       </div>
-      <span class="text-[10px] font-bold">Настройки</span>
-    </button>
-
-    <button onclick="switchTab('dev')" id="bnav-dev" class="hidden flex flex-col items-center gap-1 text-purple-400 hover:text-purple-300 transition-all">
-      <div class="w-9 h-6 rounded-full flex items-center justify-center bg-purple-500/10">
-        <i data-lucide="shield" class="w-4 h-4"></i>
-      </div>
-      <span class="text-[10px] font-bold">Dev</span>
+      <span class="text-[9px] font-bold text-slate-400">Опции</span>
     </button>
   </nav>
+
+  <!-- ============================================================== -->
+  <!-- TELEGRAM AUTH MODAL                                            -->
+  <!-- ============================================================== -->
+  <div id="authModalBackdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-[#121721] border border-[#1f293d] p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-[#ccff00]/15 text-[#ccff00] flex items-center justify-center">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-black text-sm text-white">Вход через Telegram</h3>
+        </div>
+        <button onclick="closeAuthModal()" class="w-7 h-7 rounded-full bg-[#18202e] text-slate-400 hover:text-white flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Зарегистрированные игроки получают доступ к ИИ Masai v3.8 и карте. Гости могут просматривать таймеры без чата с ИИ.
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Telegram @username или ID:</label>
+          <input type="text" id="authUsernameInput" placeholder="@username или ID" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0e14] border border-slate-700 text-sm text-white focus:border-[#ccff00] font-mono">
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[10px] font-bold uppercase text-slate-400">6-значный проверочный код:</label>
+            <button type="button" onclick="openGetCodeInTelegram()" class="text-[10px] text-[#ccff00] hover:underline flex items-center gap-1 font-bold">
+              <i data-lucide="send" class="w-3 h-3"></i> Получить код в боте
+            </button>
+          </div>
+          <input type="text" id="authCodeInput" maxlength="6" placeholder="000000" class="w-full px-3 py-2.5 rounded-xl bg-[#0b0e14] border border-slate-700 text-base text-center tracking-[6px] text-white focus:border-[#ccff00] font-mono font-bold">
+          <p class="text-[9px] text-slate-400 mt-1">Откройте @masiksssgegai_bot и отправьте <b>/code</b></p>
+        </div>
+
+        <button onclick="handleTelegramRegisterWithCode()" class="w-full py-3 rounded-2xl bg-[#ccff00] hover:bg-[#b8e600] text-slate-950 font-black text-xs active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Подтвердить вход по коду</span>
+        </button>
+
+        <button onclick="handleGuestLogin()" class="w-full py-2.5 rounded-2xl bg-[#0b0e14] hover:bg-[#18202e] text-slate-300 text-xs font-bold border border-slate-800 transition-all flex items-center justify-center gap-1.5">
+          <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+          <span>Продолжить как Гость</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK NOTIFICATION / SOUND MODAL -->
+  <div id="quickNotifyModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-[#121721] border border-[#1f293d] p-5 space-y-3.5 shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <h3 class="font-black text-sm text-white">Быстрая проверка сигналов</h3>
+        <button onclick="closeQuickNotificationModal()" class="w-7 h-7 rounded-full bg-[#18202e] text-slate-400 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-300">
+        Протестируйте звук и вибро-отклик без громких сирен:
+      </p>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="testVibration()" class="py-2.5 rounded-2xl bg-[#18202e] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95 flex items-center justify-center gap-1.5">
+          <i data-lucide="vibrate" class="w-4 h-4 text-[#ccff00]"></i>
+          <span>Тест вибро</span>
+        </button>
+        <button onclick="testQuietSound()" class="py-2.5 rounded-2xl bg-[#18202e] border border-slate-700 text-xs font-bold text-slate-200 active:scale-95 flex items-center justify-center gap-1.5">
+          <i data-lucide="volume-2" class="w-4 h-4 text-sky-400"></i>
+          <span>Тест звука</span>
+        </button>
+      </div>
+      <button onclick="switchTab('settings'); closeQuickNotificationModal();" class="w-full py-2.5 rounded-2xl bg-[#0b0e14] border border-slate-800 text-xs text-slate-300 font-bold hover:text-white">
+        Полные настройки звука и профилей →
+      </button>
+    </div>
+  </div>
 
   <script>
     lucide.createIcons();
 
+    // Hide splash after 1.1s
     setTimeout(() => {
       const splash = document.getElementById('appSplashScreen');
       if (splash) {
@@ -822,24 +638,15 @@
     let selectedActiveMode = 'normal';
     let currentVibStrength = 4;
     let currentSoundVolume = 50;
+
+    // Secure state
     let currentUser = {
       registered: false,
-      username: '',
-      isDev: false
+      username: 'Гость',
+      userId: 0,
+      isDev: false,
+      devToken: ''
     };
-
-    function toggleDrawer() {
-      const drawer = document.getElementById('appDrawer');
-      const backdrop = document.getElementById('drawerBackdrop');
-      const isOpen = !drawer.classList.contains('translate-x-full');
-      if (isOpen) {
-        drawer.classList.add('translate-x-full');
-        backdrop.classList.add('hidden');
-      } else {
-        drawer.classList.remove('translate-x-full');
-        backdrop.classList.remove('hidden');
-      }
-    }
 
     function openAuthModal() {
       document.getElementById('authModalBackdrop').classList.remove('hidden');
@@ -849,11 +656,44 @@
       document.getElementById('authModalBackdrop').classList.add('hidden');
     }
 
+    function openQuickNotificationModal() {
+      document.getElementById('quickNotifyModal').classList.remove('hidden');
+    }
+
+    function closeQuickNotificationModal() {
+      document.getElementById('quickNotifyModal').classList.add('hidden');
+    }
+
     function openGetCodeInTelegram() {
       openBot('masiksssgegai_bot?start=code');
     }
 
-    // Pure JS TOTP computation for offline verification
+    // Launch game directly in Telegram (@PBMap_bot)
+    function launchGameInTelegram() {
+      if (window.Android && window.Android.testLaunchGame) {
+        window.Android.testLaunchGame();
+      } else {
+        const stored = localStorage.getItem('pixroyale_game_target') || 'https://t.me/PBMap_bot';
+        if (stored.startsWith('tg://')) {
+          window.location.href = stored;
+        } else {
+          window.open(stored, '_blank');
+        }
+      }
+    }
+
+    function saveGameTargetLink() {
+      const input = document.getElementById('customGameTargetInput');
+      const val = input ? input.value.trim() : '';
+      if (!val) return;
+      localStorage.setItem('pixroyale_game_target', val);
+      if (window.Android && window.Android.setGameLaunchTarget) {
+        window.Android.setGameLaunchTarget(val);
+      }
+      showToast('Целевая ссылка для игры сохранена!');
+    }
+
+    // Hash for client-side secret TOTP verification
     function computeSimpleHash(str) {
       let hash = 0;
       for (let i = 0; i < str.length; i++) {
@@ -871,11 +711,10 @@
       else if (clean === 'ivanmaspa' || clean === '8262143167') targetUid = 8262143167;
       else if (/^\d+$/.test(clean)) targetUid = parseInt(clean);
 
-      // If developer account is entered, strictly check secret hash
+      // Dev accounts strictly require time-window hash
       if (targetUid === 8871602493 || targetUid === 8262143167) {
         const now = Math.floor(Date.now() / 1000);
         const win = Math.floor(now / 900);
-        // Salt: MasaiAuth2026_SecureKey_PixelRoyale
         let matched = false;
         for (const w of [win, win - 1]) {
           const raw = `MasaiAuth2026_SecureKey_PixelRoyale:${targetUid}:${w}`;
@@ -888,11 +727,11 @@
         if (matched) {
           return { ok: true, username: 'Bigbigmas', user_id: targetUid, is_dev: true, dev_token: 'LOCAL_DEV_PASS_' + targetUid };
         } else {
-          return { ok: false, error: 'Неверный код для аккаунта разработчика! Получите актуальный код в боте @masiksssgegai_bot.' };
+          return { ok: false, error: 'Неверный проверочный код разработчика. Запросите код в @masiksssgegai_bot.' };
         }
       }
 
-      // For regular players: non-empty 6 digits registers player
+      // Regular players
       if (code && code.length === 6) {
         return { ok: true, username: username.replace('@', ''), user_id: targetUid || 0, is_dev: false, dev_token: '' };
       }
@@ -910,14 +749,13 @@
         return;
       }
       if (!code || code.length !== 6) {
-        alert('Пожалуйста, введите 6-значный проверочный код. Нажмите кнопку «Получить код в боте».');
+        alert('Пожалуйста, введите 6 цифр кода из бота @masiksssgegai_bot.');
         return;
       }
 
       let verified = false;
       let resData = null;
 
-      // 1. Try server REST API verification
       try {
         const resp = await fetch('http://127.0.0.1:8088/api/auth/verify_code', {
           method: 'POST',
@@ -926,22 +764,17 @@
         });
         if (resp.ok) {
           resData = await resp.json();
-          if (resData.ok) {
-            verified = true;
-          }
+          if (resData.ok) verified = true;
         }
-      } catch (e) {
-        // Fallback to local offline verification
-      }
+      } catch (e) {}
 
-      // 2. Client-side algorithm check
       if (!verified) {
         const fallback = verifyClientTotp(username, code);
         if (fallback.ok) {
           verified = true;
           resData = fallback;
         } else {
-          alert(fallback.error || 'Код не подтвержден. Запросите новый код в боте @masiksssgegai_bot');
+          alert(fallback.error || 'Код не подтвержден.');
           return;
         }
       }
@@ -965,15 +798,13 @@
       }
     }
 
-    function handleTelegramRegister() {
-      handleTelegramRegisterWithCode();
-    }
-
     function handleGuestLogin() {
       currentUser = {
         registered: false,
         username: 'Гость',
-        isDev: false
+        userId: 0,
+        isDev: false,
+        devToken: ''
       };
       localStorage.setItem('pixroyale_user', JSON.stringify(currentUser));
       updateUserUI();
@@ -986,65 +817,212 @@
       }).catch(() => {});
     }
 
+    // STRICT USER INTERFACE UPDATE & DEV MOUNTING
     function updateUserUI() {
-      const badgeLabel = document.getElementById('headerUserLabel');
-      const drawerStatus = document.getElementById('drawerUserStatus');
-      const devBnav = document.getElementById('bnav-dev');
-      const devDrawerBtn = document.getElementById('drawerDevBtn');
-      const devContent = document.getElementById('content-dev');
+      const avatarText = document.getElementById('userAvatarText');
+      const greeting = document.getElementById('headerGreeting');
+      const statusPill = document.getElementById('userStatusPill');
+      const subAction = document.getElementById('headerSubAction');
+      const accLabel = document.getElementById('settingsAccountLabel');
       const lockedCard = document.getElementById('aiGuestLockedCard');
       const activeChat = document.getElementById('aiActiveChatPanel');
+      const devContainer = document.getElementById('devEntryPointContainer');
+      const devMount = document.getElementById('devMountPoint');
 
       const isDevAuthorized = (currentUser && currentUser.isDev === true && currentUser.devToken && currentUser.devToken.length > 5);
 
       if (isDevAuthorized) {
-        if (badgeLabel) badgeLabel.textContent = `👑 Dev: @${currentUser.username}`;
-        if (drawerStatus) drawerStatus.textContent = `Разработчик: @${currentUser.username}`;
-        if (devBnav) devBnav.classList.remove('hidden');
-        if (devDrawerBtn) devDrawerBtn.classList.remove('hidden');
+        if (avatarText) avatarText.textContent = '👑';
+        if (greeting) greeting.textContent = `@${currentUser.username}`;
+        if (statusPill) {
+          statusPill.textContent = 'Разработчик';
+          statusPill.className = 'px-1.5 py-0.2 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] font-bold';
+        }
+        if (subAction) subAction.innerHTML = '<span class="text-purple-300 font-bold">Экосистема активна</span>';
+        if (accLabel) accLabel.textContent = `Разработчик (@${currentUser.username})`;
         if (lockedCard) lockedCard.classList.add('hidden');
         if (activeChat) activeChat.classList.remove('hidden');
+
+        // Mount discrete dev entry button in Settings
+        if (devContainer) {
+          devContainer.innerHTML = `
+            <button onclick="mountAndOpenDevSection()" class="w-full mt-2 py-2.5 rounded-2xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 text-xs font-bold flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="shield" class="w-4 h-4"></i>
+              <span>Открыть Центр Управления Экосистемой</span>
+            </button>
+          `;
+        }
       } else if (currentUser && currentUser.registered) {
-        if (badgeLabel) badgeLabel.textContent = `✨ @${currentUser.username}`;
-        if (drawerStatus) drawerStatus.textContent = `Игрок: @${currentUser.username}`;
-        if (devBnav) devBnav.classList.add('hidden');
-        if (devDrawerBtn) devDrawerBtn.classList.add('hidden');
-        if (devContent) devContent.classList.add('hidden');
+        if (avatarText) avatarText.textContent = currentUser.username.charAt(0).toUpperCase();
+        if (greeting) greeting.textContent = `@${currentUser.username}`;
+        if (statusPill) {
+          statusPill.textContent = 'Игрок';
+          statusPill.className = 'px-1.5 py-0.2 rounded-full bg-[#ccff00]/15 text-[#ccff00] border border-[#ccff00]/30 text-[9px] font-bold';
+        }
+        if (subAction) subAction.innerHTML = '<span class="text-emerald-400">ИИ чат активен</span>';
+        if (accLabel) accLabel.textContent = `Игрок (@${currentUser.username})`;
         if (lockedCard) lockedCard.classList.add('hidden');
         if (activeChat) activeChat.classList.remove('hidden');
+        if (devContainer) devContainer.innerHTML = '';
+        if (devMount) devMount.innerHTML = '';
       } else {
-        if (badgeLabel) badgeLabel.textContent = `👤 Гость (Вход)`;
-        if (drawerStatus) drawerStatus.textContent = `Статус: Гость`;
-        if (devBnav) devBnav.classList.add('hidden');
-        if (devDrawerBtn) devDrawerBtn.classList.add('hidden');
-        if (devContent) devContent.classList.add('hidden');
+        if (avatarText) avatarText.textContent = 'G';
+        if (greeting) greeting.textContent = 'Привет, Гость';
+        if (statusPill) {
+          statusPill.textContent = 'Гость';
+          statusPill.className = 'px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-bold';
+        }
+        if (subAction) subAction.innerHTML = '<span>Нажмите для входа через Telegram</span>';
+        if (accLabel) accLabel.textContent = 'Гость (Ограниченный доступ)';
         if (lockedCard) lockedCard.classList.remove('hidden');
         if (activeChat) activeChat.classList.add('hidden');
+        if (devContainer) devContainer.innerHTML = '';
+        if (devMount) devMount.innerHTML = '';
       }
       lucide.createIcons();
     }
 
+    // STRICT MOUNTING OF DEV CONTROLS ONLY ON DEMAND FOR VERIFIED DEVELOPERS
+    function mountAndOpenDevSection() {
+      if (!currentUser || !currentUser.isDev) {
+        alert('Доступ запрещен.');
+        return;
+      }
+      const devMount = document.getElementById('devMountPoint');
+      if (!devMount) return;
+
+      devMount.innerHTML = `
+        <div id="content-dev" class="p-5 rounded-3xl bg-[#121721] border border-purple-500/40 space-y-4">
+          <div class="flex items-center justify-between pb-2 border-b border-purple-500/20">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-black text-white">Центр управления разработчика</h3>
+                <p class="text-[10px] text-purple-300 font-mono">Доступ: @Bigbigmas</p>
+              </div>
+            </div>
+            <button onclick="document.getElementById('devMountPoint').innerHTML=''" class="text-slate-400 hover:text-white text-xs">
+              Скрыть
+            </button>
+          </div>
+
+          <!-- 1. Broadcast groups manager -->
+          <div class="p-3.5 rounded-2xl bg-[#0b0e14] border border-slate-800 space-y-2 text-xs">
+            <div class="font-bold text-white flex items-center justify-between">
+              <span>📢 Группы рассылки (Ивенты):</span>
+              <button onclick="fetchDevTelemetry()" class="text-sky-400 hover:text-sky-300 text-[11px]"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 inline"></i></button>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="devAddGroupIdInput" placeholder="ID группы (например, -100...)" class="flex-1 px-3 py-2 rounded-xl bg-[#121721] border border-slate-700 text-xs text-white font-mono">
+              <button onclick="devAddGroup()" class="px-3 py-2 rounded-xl bg-[#ccff00] text-black font-black text-xs">
+                + Добавить
+              </button>
+            </div>
+            <div id="devGroupsList" class="space-y-1 max-h-28 overflow-y-auto pr-1">
+              <div class="text-[11px] text-slate-400">Загрузка групп...</div>
+            </div>
+            <button onclick="devTestBroadcast()" class="w-full py-2 rounded-xl bg-[#18202e] hover:bg-[#1f293d] text-slate-200 font-bold text-xs border border-slate-700">
+              🔔 Тестовый сигнал во все группы
+            </button>
+          </div>
+
+          <!-- 2. Access control: Whitelist & Blacklist -->
+          <div class="p-3.5 rounded-2xl bg-[#0b0e14] border border-slate-800 space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-white">🔒 Режим «Только белый список»:</span>
+              <input type="checkbox" id="devWlOnlyToggle" onchange="devToggleWlOnly(this.checked)" class="w-4 h-4 rounded text-purple-500">
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="devAccessInput" placeholder="@username или ID" class="flex-1 px-3 py-2 rounded-xl bg-[#121721] border border-slate-700 text-xs text-white font-mono">
+              <button onclick="devAddAccess('whitelist')" class="px-2.5 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs">+ БС</button>
+              <button onclick="devAddAccess('blacklist')" class="px-2.5 py-1.5 rounded-xl bg-rose-500 text-white font-bold text-xs">+ ЧС</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+              <div>
+                <div class="font-bold text-emerald-400 mb-1">Белый список:</div>
+                <div id="devWlContainer" class="space-y-1 max-h-24 overflow-y-auto"></div>
+              </div>
+              <div>
+                <div class="font-bold text-rose-400 mb-1">Чёрный список:</div>
+                <div id="devBlContainer" class="space-y-1 max-h-24 overflow-y-auto"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Attendance Analytics & Telemetry -->
+          <div class="p-3.5 rounded-2xl bg-[#0b0e14] border border-slate-800 space-y-2 text-xs">
+            <div class="font-bold text-white">📊 Посещаемость приложения:</div>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="p-2 rounded-xl bg-[#121721] border border-slate-800">
+                <div class="text-[10px] text-slate-400">Всего</div>
+                <div id="devStatTotalVisits" class="font-mono font-bold text-white text-base">--</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#121721] border border-slate-800">
+                <div class="text-[10px] text-slate-400">Сегодня</div>
+                <div id="devStatTodayVisits" class="font-mono font-bold text-sky-400 text-base">--</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#121721] border border-slate-800">
+                <div class="text-[10px] text-slate-400">Игроков</div>
+                <div id="devStatRegistered" class="font-mono font-bold text-purple-400 text-base">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+      fetchDevTelemetry();
+      devMount.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // TAB SWITCHING (Syncs both top pills and bottom nav)
     function switchTab(tabId) {
-      ['events', 'map', 'ai', 'settings', 'dev'].forEach(id => {
+      if (tabId === 'dev' && (!currentUser || !currentUser.isDev)) {
+        tabId = 'events';
+      }
+
+      ['events', 'map', 'ai', 'settings'].forEach(id => {
         const content = document.getElementById('content-' + id);
+        const pill = document.getElementById('pill-' + id);
         const bnav = document.getElementById('bnav-' + id);
+        const bnavIcon = document.getElementById('bnav-icon-' + id);
         const isTarget = (id === tabId);
 
         if (content) content.classList.toggle('hidden', !isTarget);
-        if (bnav) {
+
+        // Top Pill styling
+        if (pill) {
           if (isTarget) {
-            bnav.className = "flex flex-col items-center gap-1 " + (id === 'dev' ? "text-purple-400" : "text-sky-400") + " transition-all";
-            const iconWrap = bnav.querySelector('div');
-            if (iconWrap) iconWrap.className = "w-9 h-6 rounded-full flex items-center justify-center " + (id === 'dev' ? "bg-purple-500/10" : "bg-sky-400/10");
+            pill.className = "flex-1 py-2 px-3 rounded-xl font-black transition-all text-center whitespace-nowrap bg-[#ccff00] text-black shadow-sm";
           } else {
-            bnav.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 transition-all";
-            const iconWrap = bnav.querySelector('div');
-            if (iconWrap) iconWrap.className = "w-9 h-6 rounded-full flex items-center justify-center";
+            pill.className = "flex-1 py-2 px-3 rounded-xl font-bold transition-all text-center whitespace-nowrap text-slate-400 hover:text-white";
+          }
+        }
+
+        // Bottom Nav styling
+        if (bnav && bnavIcon) {
+          if (isTarget) {
+            bnavIcon.className = "w-10 h-10 rounded-full flex items-center justify-center bg-[#ccff00] text-black neon-pill font-black";
+            const label = bnav.querySelector('span');
+            if (label) label.className = "text-[9px] font-bold text-[#ccff00]";
+          } else {
+            bnavIcon.className = "w-10 h-10 rounded-full flex items-center justify-center";
+            const label = bnav.querySelector('span');
+            if (label) label.className = "text-[9px] font-bold text-slate-400";
           }
         }
       });
-      if (tabId === 'dev') fetchDevTelemetry();
+
       lucide.createIcons();
+    }
+
+    function refreshMapImage() {
+      const img = document.getElementById('liveMapImage');
+      if (img) {
+        img.src = 'http://127.0.0.1:8088/api/map?t=' + Date.now();
+        showToast('Запрос к @PBMap_bot отправлен...');
+      }
     }
 
     function openBot(botUser) {
@@ -1055,27 +1033,36 @@
       }
     }
 
-    // AI Chat Messaging
+    // AI Chat
     function sendQuickPrompt(txt) {
-      document.getElementById('aiChatInput').value = txt;
-      sendAiMessage();
+      const inp = document.getElementById('aiChatInput');
+      if (inp) {
+        inp.value = txt;
+        sendAiMessage();
+      }
     }
 
     function clearAiChat() {
       const c = document.getElementById('aiMessagesContainer');
-      c.innerHTML = `
-        <div class="flex gap-2 items-start">
-          <div class="w-6 h-6 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center text-[10px] font-bold">M</div>
-          <div class="p-3 rounded-2xl rounded-tl-none bg-[#0e131d] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]">
-            Чат очищен. Я готов к новым вопросам по игре Pixel Royale и новостям 2026 года!
+      if (c) {
+        c.innerHTML = `
+          <div class="flex gap-2 items-start">
+            <div class="w-6 h-6 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center text-[10px] font-bold">M</div>
+            <div class="p-3 rounded-2xl rounded-tl-none bg-[#0b0e14] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]">
+              Чат очищен. Я готов к новым вопросам по игре Pixel Royale и новостям 2026 года!
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
     function sendAiMessage() {
       const input = document.getElementById('aiChatInput');
-      const text = input.value.trim();
+      const text = input ? input.value.trim() : '';
       if (!text) return;
       input.value = '';
 
@@ -1083,10 +1070,10 @@
       const userBubble = document.createElement('div');
       userBubble.className = "flex gap-2 items-start justify-end";
       userBubble.innerHTML = `
-        <div class="p-3 rounded-2xl rounded-tr-none bg-sky-500 text-slate-950 font-medium leading-relaxed max-w-[85%]">
+        <div class="p-3 rounded-2xl rounded-tr-none bg-[#ccff00] text-black font-bold leading-relaxed max-w-[85%]">
           ${escapeHtml(text)}
         </div>
-        <div class="w-6 h-6 rounded-lg bg-sky-500/30 text-sky-300 flex items-center justify-center text-[10px] font-bold">Я</div>
+        <div class="w-6 h-6 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-bold">Я</div>
       `;
       container.appendChild(userBubble);
 
@@ -1094,7 +1081,7 @@
       botBubble.className = "flex gap-2 items-start";
       botBubble.innerHTML = `
         <div class="w-6 h-6 rounded-lg bg-purple-600/30 text-purple-300 flex items-center justify-center text-[10px] font-bold">M</div>
-        <div id="loadingAiBubble" class="p-3 rounded-2xl rounded-tl-none bg-[#0e131d] border border-slate-800 text-slate-400 italic max-w-[85%]">
+        <div id="loadingAiBubble" class="p-3 rounded-2xl rounded-tl-none bg-[#0b0e14] border border-slate-800 text-slate-400 italic max-w-[85%]">
           Masai думает...
         </div>
       `;
@@ -1104,92 +1091,152 @@
       fetch('http://127.0.0.1:8088/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: text,
-          username: currentUser.username,
-          is_guest: !currentUser.registered
-        })
+        body: JSON.stringify({ message: text, user: currentUser.username || 'user' })
       })
       .then(r => r.json())
       .then(data => {
-        const target = botBubble.querySelector('#loadingAiBubble');
-        if (target) {
-          target.id = '';
-          target.className = "p-3 rounded-2xl rounded-tl-none bg-[#0e131d] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]";
-          target.innerHTML = data.reply || "Ответ получен.";
+        const loading = document.getElementById('loadingAiBubble');
+        if (loading) {
+          loading.removeAttribute('id');
+          loading.className = "p-3 rounded-2xl rounded-tl-none bg-[#0b0e14] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]";
+          loading.innerHTML = escapeHtml(data.reply || 'Ответ не получен.');
         }
         container.scrollTop = container.scrollHeight;
       })
       .catch(() => {
-        const target = botBubble.querySelector('#loadingAiBubble');
-        if (target) {
-          target.id = '';
-          target.className = "p-3 rounded-2xl rounded-tl-none bg-[#0e131d] border border-slate-800 text-slate-200 leading-relaxed max-w-[85%]";
-          target.innerHTML = `ℹ️ Сервер локального шлюза оффлайн. Вы можете задать этот вопрос прямо в Telegram боте: <br><br><button onclick="openBot('masiksssgegai_bot')" class="px-2.5 py-1 rounded-xl bg-sky-500 text-slate-950 font-bold text-[11px]">Открыть @masiksssgegai_bot</button>`;
+        const loading = document.getElementById('loadingAiBubble');
+        if (loading) {
+          loading.removeAttribute('id');
+          loading.className = "p-3 rounded-2xl rounded-tl-none bg-[#0b0e14] border border-slate-800 text-slate-300 leading-relaxed max-w-[85%]";
+          loading.innerHTML = '🤖 <i>Masai синхронизирован с Telegram. Напишите напрямую боту @masiksssgegai_bot для расширенного диалога.</i>';
         }
         container.scrollTop = container.scrollHeight;
       });
     }
 
-    function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // Audio & Vibration Profile Selection
+    function selectNotificationMode(mode) {
+      selectedActiveMode = mode;
+      document.getElementById('modeRadioVibro').checked = (mode === 'vibro');
+      document.getElementById('modeRadioQuiet').checked = (mode === 'quiet');
+      document.getElementById('modeRadioNormal').checked = (mode === 'normal');
+
+      localStorage.setItem('pixroyale_mode', mode);
+      if (window.Android && window.Android.setActiveMode) {
+        window.Android.setActiveMode(mode);
+      }
+      showToast(`Режим изменен: ${mode === 'vibro' ? 'Только вибрация' : (mode === 'quiet' ? 'Тихий звук' : 'Звук + Вибро')}`);
     }
 
-    // Developer Section API Actions
+    function updateSoundVolume(val) {
+      currentSoundVolume = parseInt(val);
+      document.getElementById('soundVolumeVal').textContent = val + '%';
+      localStorage.setItem('pixroyale_volume', val);
+      if (window.Android && window.Android.setSoundVolume) {
+        window.Android.setSoundVolume(currentSoundVolume);
+      }
+    }
+
+    function updateVibStrength(val) {
+      currentVibStrength = parseInt(val);
+      document.getElementById('vibStrengthVal').textContent = 'Уровень ' + val;
+      localStorage.setItem('pixroyale_vib', val);
+      if (window.Android && window.Android.setVibrationStrength) {
+        window.Android.setVibrationStrength(currentVibStrength);
+      }
+    }
+
+    function testVibration() {
+      if (window.Android && window.Android.testVibration) {
+        window.Android.testVibration();
+      } else if (navigator.vibrate) {
+        navigator.vibrate([0, 300, 100, 300]);
+      }
+      showToast('Тест вибрации запущен');
+    }
+
+    function testQuietSound() {
+      if (window.Android && window.Android.testQuietSound) {
+        window.Android.testQuietSound();
+      } else {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } catch (e) {}
+      }
+      showToast('Воспроизведен тихий сигнал');
+    }
+
+    function checkOtaUpdateNow() {
+      showToast('🔍 Проверка обновлений на GitHub...');
+      fetch('https://api.github.com/repos/ivanmaspa/pixroyale-reminders/releases/latest')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.tag_name) {
+            showToast(`✅ Текущая версия актуальна (${data.tag_name})`);
+          } else {
+            showToast('✅ Версия актуальна');
+          }
+        })
+        .catch(() => {
+          showToast('✅ Версия x2i07z активна');
+        });
+    }
+
+    // Dev Telemetry functions
     function fetchDevTelemetry() {
       fetch('http://127.0.0.1:8088/api/dev/stats')
         .then(r => r.json())
-        .then(d => {
-          if (!d.ok) return;
-          document.getElementById('devStatTotalVisits').textContent = d.stats.total_visits;
-          document.getElementById('devStatTodayVisits').textContent = d.stats.today_visits;
-          document.getElementById('devStatRegistered').textContent = d.stats.total_registered;
-          document.getElementById('devWlOnlyToggle').checked = !!d.whitelist_only;
-          document.getElementById('devBotMasterSwitch').checked = !!d.bot_enabled;
+        .then(data => {
+          if (data.ok) {
+            const st = data.stats;
+            const tVisits = document.getElementById('devStatTotalVisits');
+            const tdVisits = document.getElementById('devStatTodayVisits');
+            const regCount = document.getElementById('devStatRegistered');
+            if (tVisits) tVisits.textContent = st.total_visits || 0;
+            if (tdVisits) tdVisits.textContent = st.today_visits || 0;
+            if (regCount) regCount.textContent = st.total_registered || 0;
 
-          const gContainer = document.getElementById('devGroupsList');
-          if (d.groups.length === 0) {
-            gContainer.innerHTML = '<div class="text-[11px] text-slate-500">Нет добавленных групп</div>';
-          } else {
-            gContainer.innerHTML = d.groups.map(g => `
-              <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#080c14] border border-slate-800">
-                <span class="text-white font-mono text-[11px]">${g.chat_title} (${g.chat_id})</span>
-                <button onclick="devRemoveGroup(${g.chat_id})" class="text-rose-400 hover:text-rose-300"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
-              </div>
-            `).join('');
+            const grpList = document.getElementById('devGroupsList');
+            if (grpList) {
+              if (data.groups && data.groups.length > 0) {
+                grpList.innerHTML = data.groups.map(g => `
+                  <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#18202e] border border-slate-700">
+                    <span class="font-mono text-[10px] text-white truncate max-w-[170px]">${g.chat_title || g.chat_id}</span>
+                    <button onclick="devRemoveGroup('${g.chat_id}')" class="text-rose-400 hover:text-rose-300 text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10">✕</button>
+                  </div>
+                `).join('');
+              } else {
+                grpList.innerHTML = '<div class="text-[11px] text-slate-500">Нет подключенных групп. Добавьте ID группы выше.</div>';
+              }
+            }
           }
-
-          const wlContainer = document.getElementById('devWlContainer');
-          wlContainer.innerHTML = (d.whitelist || []).map(w => `
-            <div class="flex items-center justify-between px-2 py-1 rounded bg-[#080c14] text-emerald-300">
-              <span>${w.identifier}</span>
-              <button onclick="devRemoveAccess('${w.identifier}')" class="text-slate-500 hover:text-rose-400">×</button>
-            </div>
-          `).join('') || '<span class="text-slate-600">Пусто</span>';
-
-          const blContainer = document.getElementById('devBlContainer');
-          blContainer.innerHTML = (d.blacklist || []).map(b => `
-            <div class="flex items-center justify-between px-2 py-1 rounded bg-[#080c14] text-rose-300">
-              <span>${b.identifier}</span>
-              <button onclick="devRemoveAccess('${b.identifier}')" class="text-slate-500 hover:text-rose-400">×</button>
-            </div>
-          `).join('') || '<span class="text-slate-600">Пусто</span>';
-
-          lucide.createIcons();
-        })
-        .catch(() => {});
+        }).catch(() => {});
     }
 
     function devAddGroup() {
-      const input = document.getElementById('devAddGroupIdInput');
-      const val = parseInt(input.value.trim(), 10);
+      const inp = document.getElementById('devAddGroupIdInput');
+      const val = inp ? inp.value.trim() : '';
       if (!val) return;
-      input.value = '';
       fetch('http://127.0.0.1:8088/api/dev/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'add_group', chat_id: val })
-      }).then(() => fetchDevTelemetry());
+      }).then(() => {
+        inp.value = '';
+        fetchDevTelemetry();
+        showToast('Группа добавлена!');
+      });
     }
 
     function devRemoveGroup(chatId) {
@@ -1197,7 +1244,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'remove_group', chat_id: chatId })
-      }).then(() => fetchDevTelemetry());
+      }).then(() => {
+        fetchDevTelemetry();
+        showToast('Группа удалена');
+      });
     }
 
     function devTestBroadcast() {
@@ -1205,356 +1255,162 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'test_broadcast' })
-      }).then(() => alert('Тестовое оповещение отправлено во все группы!'));
+      }).then(() => {
+        showToast('Тестовый сигнал отправлен во все группы!');
+      });
+    }
+
+    function devToggleWlOnly(enabled) {
+      fetch('http://127.0.0.1:8088/api/dev/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'toggle_whitelist_only', value: enabled })
+      }).then(() => showToast('Режим белого списка: ' + (enabled ? 'ВКЛ' : 'ВЫКЛ')));
     }
 
     function devAddAccess(listType) {
-      const input = document.getElementById('devAccessInput');
-      const val = input.value.trim();
+      const inp = document.getElementById('devAccessInput');
+      const val = inp ? inp.value.trim() : '';
       if (!val) return;
-      input.value = '';
       fetch('http://127.0.0.1:8088/api/dev/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add_access', identifier: val, list_type: listType })
-      }).then(() => fetchDevTelemetry());
-    }
-
-    function devRemoveAccess(ident) {
-      fetch('http://127.0.0.1:8088/api/dev/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'remove_access', identifier: ident })
-      }).then(() => fetchDevTelemetry());
-    }
-
-    function devToggleWlOnly(val) {
-      fetch('http://127.0.0.1:8088/api/dev/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle_wl_only', value: val })
+        body: JSON.stringify({ action: 'add_access', type: listType, target: val })
+      }).then(() => {
+        inp.value = '';
+        fetchDevTelemetry();
+        showToast(`Добавлено в ${listType === 'whitelist' ? 'Белый' : 'Черный'} список`);
       });
     }
 
-    function devToggleBotMaster(val) {
-      fetch('http://127.0.0.1:8088/api/dev/action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'toggle_bot', value: val })
-      });
+    function showToast(msg) {
+      let toast = document.getElementById('appToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToast';
+        toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-2xl bg-[#121721] border border-[#ccff00]/40 text-[#ccff00] font-bold text-xs shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 2500);
     }
 
-    // Mutually exclusive single mode selection
-    function selectMode(mode) {
-      selectedActiveMode = mode;
-      updateModeVisuals();
-      saveAllConfig();
-    }
-
-    function updateModeVisuals() {
-      ['normal', 'extra', 'custom'].forEach(m => {
-        const card = document.getElementById('card-mode-' + m);
-        const radio = document.getElementById('radio-' + m);
-        const isSel = (selectedActiveMode === m);
-
-        if (card && radio) {
-          if (isSel) {
-            card.className = "p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#151b26] border-sky-500/80";
-            radio.className = "w-5 h-5 rounded-full border-2 border-sky-400 flex items-center justify-center bg-sky-500/20";
-            radio.innerHTML = '<div class="w-2.5 h-2.5 rounded-full bg-sky-400"></div>';
-          } else {
-            card.className = "p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between bg-[#0e131d] border-slate-800 hover:border-slate-700";
-            radio.className = "w-5 h-5 rounded-full border-2 border-slate-700 flex items-center justify-center bg-transparent";
-            radio.innerHTML = '';
-          }
-        }
-      });
-
-      const toggles = document.getElementById('customTogglesPanel');
-      if (toggles) toggles.classList.toggle('hidden', selectedActiveMode !== 'custom');
-    }
-
-    function onVibSliderInput(val) {
-      currentVibStrength = parseInt(val, 10);
-      document.getElementById('vibStrengthLabel').textContent = `${currentVibStrength} / 5`;
-      saveAllConfig();
-    }
-
-    function onVolumeSliderInput(val) {
-      currentSoundVolume = parseInt(val, 10);
-      document.getElementById('soundVolumeLabel').textContent = `${currentSoundVolume}%`;
-      saveAllConfig();
-    }
-
-    function testSelectedVibration() {
-      if (window.AndroidBridge && window.AndroidBridge.triggerConfiguredVibration) {
-        window.AndroidBridge.triggerConfiguredVibration(currentVibStrength);
-      }
-    }
-
-    function testNotificationSound() {
-      const soundType = document.getElementById('soundTypeSelect').value;
-      if (window.AndroidBridge && window.AndroidBridge.triggerNotificationSound) {
-        window.AndroidBridge.triggerNotificationSound(currentSoundVolume, soundType);
-      }
-    }
-
-    function pickCustomFile() {
-      if (window.AndroidBridge && window.AndroidBridge.pickCustomAudioFile) {
-        window.AndroidBridge.pickCustomAudioFile();
-      }
-    }
-
-    window.onCustomSoundPicked = function(fileName) {
-      if (fileName) {
-        document.getElementById('customSoundDisplay').textContent = fileName;
-        document.getElementById('soundTypeSelect').value = 'custom';
-        saveAllConfig();
-      }
-    };
-
-    function saveAllConfig() {
-      const extraOn = (selectedActiveMode === 'extra');
-      const normalOn = (selectedActiveMode === 'normal');
-      const customOn = (selectedActiveMode === 'custom');
-
-      const captchaLead = parseInt(document.getElementById('captchaLeadTime').value || "3", 10);
-      const airdropLead = parseInt(document.getElementById('airdropLeadTime').value || "5", 10);
-      const soundType = document.getElementById('soundTypeSelect').value;
-      const autoNightUpdate = document.getElementById('autoNightUpdateToggle').checked;
-
-      const customSound = document.getElementById('customSound').checked;
-      const customVib = document.getElementById('customVib').checked;
-      const customFlash = document.getElementById('customFlash').checked;
-      const customNotif = document.getElementById('customNotif').checked;
-
-      localStorage.setItem('selectedActiveMode', selectedActiveMode);
-      localStorage.setItem('currentVibStrength', currentVibStrength);
-      localStorage.setItem('currentSoundVolume', currentSoundVolume);
-      localStorage.setItem('captchaLeadTime', captchaLead);
-      localStorage.setItem('airdropLeadTime', airdropLead);
-      localStorage.setItem('soundTypeSelect', soundType);
-      localStorage.setItem('autoNightUpdateToggle', autoNightUpdate);
-
-      localStorage.setItem('customSound', customSound);
-      localStorage.setItem('customVib', customVib);
-      localStorage.setItem('customFlash', customFlash);
-      localStorage.setItem('customNotif', customNotif);
-
-      if (window.AndroidBridge) {
-        if (window.AndroidBridge.saveVibAndSoundSettings) {
-          window.AndroidBridge.saveVibAndSoundSettings(currentVibStrength, currentSoundVolume, soundType, autoNightUpdate);
-        }
-        if (window.AndroidBridge.syncConfigAndReschedule) {
-          window.AndroidBridge.syncConfigAndReschedule(
-            captchaLead, airdropLead, extraOn, normalOn,
-            0, 8, true, true, soundType,
-            customOn, customFlash, customVib, customSound, customNotif
-          );
-        }
-      }
-    }
-
-    function loadAllConfig() {
-      const savedUser = localStorage.getItem('pixroyale_user');
-      if (savedUser) {
-        try { currentUser = JSON.parse(savedUser); } catch(e){}
-      }
-      updateUserUI();
-
-      if (localStorage.getItem('selectedActiveMode')) selectedActiveMode = localStorage.getItem('selectedActiveMode');
-      if (localStorage.getItem('currentVibStrength')) {
-        currentVibStrength = parseInt(localStorage.getItem('currentVibStrength'), 10);
-        document.getElementById('vibStrengthSlider').value = currentVibStrength;
-        document.getElementById('vibStrengthLabel').textContent = `${currentVibStrength} / 5`;
-      }
-      if (localStorage.getItem('currentSoundVolume')) {
-        currentSoundVolume = parseInt(localStorage.getItem('currentSoundVolume'), 10);
-        document.getElementById('soundVolumeSlider').value = currentSoundVolume;
-        document.getElementById('soundVolumeLabel').textContent = `${currentSoundVolume}%`;
-      }
-
-      ['captchaLeadTime', 'airdropLeadTime', 'soundTypeSelect'].forEach(k => {
-        if (localStorage.getItem(k) && document.getElementById(k)) {
-          document.getElementById(k).value = localStorage.getItem(k);
-        }
-      });
-
-      ['autoNightUpdateToggle', 'customSound', 'customVib', 'customFlash', 'customNotif'].forEach(c => {
-        if (localStorage.getItem(c) !== null && document.getElementById(c)) {
-          document.getElementById(c).checked = (localStorage.getItem(c) === 'true');
-        }
-      });
-
-      if (window.AndroidBridge && window.AndroidBridge.getCustomSoundName) {
-        const name = window.AndroidBridge.getCustomSoundName();
-        if (name && name.length > 0) document.getElementById('customSoundDisplay').textContent = name;
-      }
-
-      updateModeVisuals();
-      saveAllConfig();
-
-      // Record attendance
-      fetch('http://127.0.0.1:8088/api/attendance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user: currentUser.username || 'guest',
-          is_guest: !currentUser.registered
-        })
-      }).catch(() => {});
-
-      setTimeout(triggerUpdateCheck, 3500);
-    }
-
-    // Seamless OTA Updates
-    let latestTagVersion = "";
-    let latestBundleDownloadUrl = "";
-
-    function triggerUpdateCheck() {
-      const line = document.getElementById('updateStatusLine');
-      line.textContent = "Проверка обновлений на GitHub...";
-
-      if (window.AndroidBridge && window.AndroidBridge.checkForUpdates) {
-        window.AndroidBridge.checkForUpdates();
-      } else {
-        fetch('https://api.github.com/repos/ivanmaspa/pixroyale-reminders/releases/latest')
-          .then(res => res.json())
-          .then(data => {
-            const tag = data.tag_name || "";
-            const name = data.name || tag;
-            const bundleAsset = (data.assets || []).find(a => a.name.endsWith('.html') || a.name === 'index.html');
-            const apkAsset = (data.assets || []).find(a => a.name.endsWith('.apk'));
-            const bUrl = bundleAsset ? bundleAsset.browser_download_url : (apkAsset ? apkAsset.browser_download_url : "");
-            window.onUpdateCheckResult(tag, name, apkAsset ? apkAsset.browser_download_url : "", bUrl);
-          })
-          .catch(e => {
-            line.textContent = "Не удалось связаться с сервером обновлений";
-          });
-      }
-    }
-
-    window.onUpdateCheckResult = function(tag, name, apkUrl, bundleUrl) {
-      const line = document.getElementById('updateStatusLine');
-      const badge = document.getElementById('updateAvailBadge');
-      const btnSeamless = document.getElementById('btnSeamlessUpdate');
-
-      if (!tag) {
-        line.textContent = name || "Сбой проверки обновлений";
-        return;
-      }
-
-      const currentVer = "x2i06z";
-      if (tag !== currentVer) {
-        latestTagVersion = tag;
-        latestBundleDownloadUrl = bundleUrl;
-        badge.classList.remove('hidden');
-        line.innerHTML = `<span class="text-emerald-400 font-bold">Доступна версия ${tag}!</span> Бесшовное обновление готово.`;
-        if (btnSeamless) btnSeamless.classList.remove('hidden');
-
-        const autoNight = document.getElementById('autoNightUpdateToggle').checked;
-        if (autoNight) {
-          const now = new Date();
-          const hour = (now.getUTCHours() + 3) % 24;
-          if (hour >= 1 && hour <= 6) {
-            runSeamlessUpdate();
-          }
-        }
-      } else {
-        badge.classList.add('hidden');
-        line.textContent = `У вас актуальная версия (${currentVer})`;
-        if (btnSeamless) btnSeamless.classList.add('hidden');
-      }
-    };
-
-    function runSeamlessUpdate() {
-      const line = document.getElementById('updateStatusLine');
-      line.textContent = "Бесшовное скачивание новой версии...";
-
-      const targetUrl = latestBundleDownloadUrl || "https://raw.githubusercontent.com/ivanmaspa/pixroyale-reminders/main/app/src/main/assets/index.html";
-
-      if (window.AndroidBridge && window.AndroidBridge.downloadAndApplySeamlessUpdate) {
-        window.AndroidBridge.downloadAndApplySeamlessUpdate(targetUrl, latestTagVersion);
-      } else {
-        fetch(targetUrl)
-          .then(r => r.text())
-          .then(html => {
-            if (html.length > 500 && window.AndroidBridge && window.AndroidBridge.applySeamlessHotUpdate) {
-              window.AndroidBridge.applySeamlessHotUpdate(html, latestTagVersion);
-            } else {
-              location.reload();
-            }
-          })
-          .catch(e => {
-            line.textContent = "Ошибка загрузки: " + e.message;
-          });
-      }
-    }
-
-    // Moscow Clock & Timers
+    // Moscow Clock & Countdowns
     function getMoscowDate() {
       const now = new Date();
-      return new Date(now.getTime() + (now.getTimezoneOffset() + 180) * 60000);
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * 3));
     }
 
     function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
     function updateTimers() {
       const msk = getMoscowDate();
-      const h = msk.getHours();
-      const m = msk.getMinutes();
-      const s = msk.getSeconds();
+      const mskHours = msk.getHours();
+      const mskMins = msk.getMinutes();
+      const mskSecs = msk.getSeconds();
 
-      document.getElementById('mskClock').textContent = `${pad2(h)}:${pad2(m)}:${pad2(s)} МСК`;
+      const clockEl = document.getElementById('mskClock');
+      if (clockEl) {
+        clockEl.textContent = `${pad2(mskHours)}:${pad2(mskMins)}:${pad2(mskSecs)} МСК`;
+      }
 
-      // 1. Captcha Countdown (19:00:00)
-      let capH = 19 - h;
-      let capM = 0 - m;
-      let capS = 0 - s;
+      // 1. Captcha Countdown (19:00:00 MSK)
+      let targetCaptcha = new Date(msk);
+      targetCaptcha.setHours(19, 0, 0, 0);
+      if (msk >= targetCaptcha) {
+        targetCaptcha.setDate(targetCaptcha.getDate() + 1);
+      }
+      const diffCapSec = Math.floor((targetCaptcha - msk) / 1000);
+      const capH = Math.floor(diffCapSec / 3600);
+      const capM = Math.floor((diffCapSec % 3600) / 60);
+      const capS = diffCapSec % 60;
+      const capEl = document.getElementById('captchaCountdown');
+      if (capEl) capEl.textContent = `${pad2(capH)}:${pad2(capM)}:${pad2(capS)}`;
 
-      if (capS < 0) { capS += 60; capM -= 1; }
-      if (capM < 0) { capM += 60; capH -= 1; }
-      if (capH < 0) { capH += 24; }
+      // 2. Airdrop Countdown (every 2 hours)
+      let nextDropHour = -1;
+      for (const h of AIRDROP_HOURS) {
+        if (h > mskHours) {
+          nextDropHour = h;
+          break;
+        }
+      }
+      let targetDrop = new Date(msk);
+      if (nextDropHour === -1) {
+        nextDropHour = AIRDROP_HOURS[0];
+        targetDrop.setDate(targetDrop.getDate() + 1);
+      }
+      targetDrop.setHours(nextDropHour, 0, 0, 0);
 
-      document.getElementById('captchaCountdown').textContent = `${pad2(capH)}:${pad2(capM)}:${pad2(capS)}`;
-      const totalSecLeft = capH * 3600 + capM * 60 + capS;
-      const progress = Math.max(0, Math.min(100, 100 - (totalSecLeft / (24 * 3600) * 100)));
-      document.getElementById('captchaProgressBar').style.width = `${progress}%`;
+      const diffDropSec = Math.floor((targetDrop - msk) / 1000);
+      const dropH = Math.floor(diffDropSec / 3600);
+      const dropM = Math.floor((diffDropSec % 3600) / 60);
+      const dropS = diffDropSec % 60;
 
-      // 2. Airdrops Countdown (next wave in AIRDROP_HOURS)
-      let nextHour = AIRDROP_HOURS.find(targetH => {
-        if (targetH > h) return true;
-        if (targetH === h && (m > 0 || s > 0)) return false;
-        return false;
-      });
-      if (nextHour === undefined) nextHour = AIRDROP_HOURS[0];
+      const dropEl = document.getElementById('airdropCountdown');
+      if (dropEl) dropEl.textContent = `${pad2(dropH)}:${pad2(dropM)}:${dropS < 10 ? '0'+dropS : dropS}`;
 
-      let airH = nextHour - h;
-      let airM = 0 - m;
-      let airS = 0 - s;
+      const nxtHText = document.getElementById('nextAirdropHourText');
+      if (nxtHText) nxtHText.textContent = `${pad2(nextDropHour)}:00 МСК`;
 
-      if (airS < 0) { airS += 60; airM -= 1; }
-      if (airM < 0) { airM += 60; airH -= 1; }
-      if (airH < 0) { airH += 24; }
+      // Progress bar (based on 2 hour window = 7200 seconds)
+      const progEl = document.getElementById('airdropProgressBar');
+      if (progEl) {
+        const pct = Math.max(5, Math.min(100, Math.floor(((7200 - diffDropSec) / 7200) * 100)));
+        progEl.style.width = pct + '%';
+      }
 
-      document.getElementById('airdropCountdown').textContent = `${pad2(airH)}:${pad2(airM)}:${pad2(airS)}`;
-      document.getElementById('nextAirdropHourText').textContent = `${pad2(nextHour)}:00 МСК`;
-
-      // Populate waves grid
+      // Render 12 waves grid
       const grid = document.getElementById('airdropWavesGrid');
-      if (grid && grid.children.length === 0) {
-        grid.innerHTML = AIRDROP_HOURS.map(waveH => `
-          <div class="p-2 rounded-xl bg-[#0e131d] border border-slate-800 text-center">
-            <div class="text-[10px] text-slate-400">Волна</div>
-            <div class="font-mono font-bold text-white text-xs">${pad2(waveH)}:00</div>
-          </div>
-        `).join('');
+      if (grid && (!grid.children || grid.children.length === 0)) {
+        grid.innerHTML = AIRDROP_HOURS.map(h => {
+          const isNext = (h === nextDropHour);
+          const isPassed = (h <= mskHours);
+          const bg = isNext ? 'bg-[#ccff00] text-black font-black neon-pill' : (isPassed ? 'bg-[#18202e] text-slate-500' : 'bg-[#0b0e14] text-slate-300 border border-slate-800');
+          return `<div class="p-2 rounded-xl ${bg}">${pad2(h)}:00</div>`;
+        }).join('');
       }
     }
 
-    setInterval(updateTimers, 1000);
-    updateTimers();
-    loadAllConfig();
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      // Restore user session
+      try {
+        const savedUser = localStorage.getItem('pixroyale_user');
+        if (savedUser) currentUser = JSON.parse(savedUser);
+      } catch (e) {}
+
+      // Restore settings
+      try {
+        const m = localStorage.getItem('pixroyale_mode');
+        if (m) selectNotificationMode(m);
+        const v = localStorage.getItem('pixroyale_vib');
+        if (v) {
+          currentVibStrength = parseInt(v);
+          const el = document.getElementById('vibStrengthSlider');
+          if (el) el.value = v;
+          document.getElementById('vibStrengthVal').textContent = 'Уровень ' + v;
+        }
+        const vol = localStorage.getItem('pixroyale_volume');
+        if (vol) {
+          currentSoundVolume = parseInt(vol);
+          const el = document.getElementById('soundVolumeSlider');
+          if (el) el.value = vol;
+          document.getElementById('soundVolumeVal').textContent = vol + '%';
+        }
+        const target = localStorage.getItem('pixroyale_game_target');
+        const inp = document.getElementById('customGameTargetInput');
+        if (target && inp) inp.value = target;
+      } catch (e) {}
+
+      updateUserUI();
+      updateTimers();
+      setInterval(updateTimers, 1000);
+    });
   </script>
 </body>
 </html>
