@@ -205,62 +205,47 @@ public class ReminderBroadcastReceiver extends BroadcastReceiver {
         try {
             SharedPreferences prefs = context.getSharedPreferences("PixRoyaleConfig", Context.MODE_PRIVATE);
             String customTarget = prefs.getString("gameLaunchTarget", "").trim();
-
-            if (!customTarget.isEmpty()) {
-                if (customTarget.startsWith("http://") || customTarget.startsWith("https://") || customTarget.startsWith("tg://")) {
-                    Intent urlIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(customTarget));
-                    urlIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    return urlIntent;
-                } else {
-                    Intent pkgIntent = context.getPackageManager().getLaunchIntentForPackage(customTarget);
-                    if (pkgIntent != null) {
-                        pkgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        return pkgIntent;
-                    }
-                }
+            if (customTarget.isEmpty()) {
+                customTarget = "tg://resolve?domain=PBMap_bot";
             }
 
             android.content.pm.PackageManager pm = context.getPackageManager();
-            String myPkg = context.getPackageName();
-            try {
-                java.util.List<android.content.pm.PackageInfo> installed = pm.getInstalledPackages(0);
-                for (android.content.pm.PackageInfo pi : installed) {
-                    String pname = pi.packageName.toLowerCase();
-                    if (pname.equals(myPkg)) continue;
-                    if ((pname.contains("pixel") || pname.contains("pix")) && (pname.contains("royale") || pname.contains("battle") || pname.contains("empire"))) {
-                        Intent launchIntent = pm.getLaunchIntentForPackage(pi.packageName);
-                        if (launchIntent != null) {
-                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            return launchIntent;
-                        }
-                    }
+
+            if (customTarget.startsWith("http://") || customTarget.startsWith("https://") || customTarget.startsWith("tg://")) {
+                Uri uri = Uri.parse(customTarget);
+                String[] tgPackages = new String[]{
+                        "org.telegram.messenger",
+                        "org.telegram.plus",
+                        "org.thunderdog.challegram",
+                        "org.telegram.messenger.web",
+                        "org.telegram.messenger.beta"
+                };
+                for (String tgPkg : tgPackages) {
+                    try {
+                        pm.getPackageInfo(tgPkg, 0);
+                        Intent tgIntent = new Intent(Intent.ACTION_VIEW, uri);
+                        tgIntent.setPackage(tgPkg);
+                        tgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        return tgIntent;
+                    } catch (Exception ignored) {}
                 }
-            } catch (Exception ignored) {}
 
-            String[] tgPackages = new String[]{
-                    "org.telegram.messenger",
-                    "org.telegram.plus",
-                    "org.thunderdog.challegram",
-                    "org.telegram.messenger.web",
-                    "org.telegram.messenger.beta"
-            };
-            Uri tgUri = Uri.parse("tg://resolve?domain=masiksssgegai_bot");
-            for (String tgPkg : tgPackages) {
-                try {
-                    pm.getPackageInfo(tgPkg, 0);
-                    Intent tgIntent = new Intent(Intent.ACTION_VIEW, tgUri);
-                    tgIntent.setPackage(tgPkg);
-                    tgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    return tgIntent;
-                } catch (Exception ignored) {}
+                Intent directTg = new Intent(Intent.ACTION_VIEW, uri);
+                directTg.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                return directTg;
+            } else {
+                Intent pkgIntent = pm.getLaunchIntentForPackage(customTarget);
+                if (pkgIntent != null) {
+                    pkgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    return pkgIntent;
+                }
             }
+        } catch (Exception ignored) {}
 
-            try {
-                Intent genericTg = new Intent(Intent.ACTION_VIEW, tgUri);
-                genericTg.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                return genericTg;
-            } catch (Exception ignored) {}
-
+        try {
+            Intent webTg = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/PBMap_bot"));
+            webTg.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            return webTg;
         } catch (Exception ignored) {}
 
         Intent fallback = new Intent(context, MainActivity.class);
