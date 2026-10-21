@@ -1,4 +1,4 @@
-package com.pixroyale.reminders;
+﻿package com.pixroyale.reminders;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
@@ -604,7 +604,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     domain = domain.replace("/", "").trim();
                     if (domain.isEmpty()) {
-                        domain = "PBMap_bot";
+                        domain = "masiksssgegai_bot";
                     }
 
                     Uri tgUri = Uri.parse("tg://resolve?domain=" + domain);
